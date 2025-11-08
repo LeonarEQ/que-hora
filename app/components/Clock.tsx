@@ -8,7 +8,7 @@ export default function Clock() {
   const [use12h, setUse12h] = useState(false);
   const [city, setCity] = useState<string>("Vigo");
   const [country, setCountry] = useState<string>("España");
-  const [weather, setWeather] = useState<any>({
+  const [weather, setWeather] = useState({
     temp: 15,
     wind: 6,
     desc: "Lluvia de gran intensidad",
@@ -17,17 +17,17 @@ export default function Clock() {
   const [showControls, setShowControls] = useState(true);
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const API_KEY = "378dcc9ea2ed3f9940b88d1bed67e558";
+  const API_KEY =
+    process.env.NEXT_PUBLIC_WEATHER_API_KEY ||
+    "378dcc9ea2ed3f9940b88d1bed67e558";
 
   useEffect(() => setMounted(true), []);
 
-  // Actualiza la hora cada segundo
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Oculta los botones tras 3s sin mover el mouse
   const handleMouseMove = () => {
     setShowControls(true);
     if (inactivityTimer.current) clearTimeout(inactivityTimer.current);
@@ -43,7 +43,6 @@ export default function Clock() {
     };
   }, []);
 
-  // Obtener ubicación y clima
   useEffect(() => {
     const getWeather = async (lat: number, lon: number) => {
       try {
@@ -55,7 +54,7 @@ export default function Clock() {
           setWeather({
             temp: Math.round(data.main.temp),
             wind: Math.round(data.wind.speed),
-            desc: data.weather[0].description,
+            desc: data.weather[0].description.toLowerCase(),
             icon: data.weather[0].icon,
           });
           if (data.name) setCity(data.name);
@@ -69,7 +68,6 @@ export default function Clock() {
 
     const getLocation = async () => {
       if (window.location.hostname === "localhost") {
-        // Modo local → datos falsos (evita CORS)
         setCity("Vigo");
         setCountry("España");
         setWeather({
@@ -86,7 +84,8 @@ export default function Clock() {
         const data = await res.json();
         const lat = data.latitude;
         const lon = data.longitude;
-        const countryName = data.country_name === "Spain" ? "España" : data.country_name || "";
+        const countryName =
+          data.country_name === "Spain" ? "España" : data.country_name || "";
         if (data.city) setCity(data.city);
         if (countryName) setCountry(countryName);
         if (lat && lon) await getWeather(lat, lon);
@@ -108,11 +107,12 @@ export default function Clock() {
     minute: "2-digit",
     second: "2-digit",
   });
-  const [cleanTime, meridiem] = use12h ? rawTime.split(" ") : [rawTime, ""];
+  const [timePart] = rawTime.split(" ");
+  const [hours, minutes, seconds] = timePart.split(":");
 
   const date = now
     .toLocaleDateString("es-ES", {
-      weekday: "long",
+      weekday: "short",
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -121,9 +121,9 @@ export default function Clock() {
     .replaceAll(" de", "");
 
   const themes = {
-    light: "bg-[#f5f5f5] text-black",
-    dark: "bg-black text-yellow-400",
-    gray: "bg-gray-900 text-gray-100",
+    light: "bg-gradient-to-b from-gray-100 to-white text-black",
+    dark: "bg-gradient-to-b from-gray-900 to-black text-yellow-400",
+    gray: "bg-gradient-to-b from-gray-800 to-gray-900 text-gray-100",
   };
 
   const baseBtn =
@@ -138,17 +138,17 @@ export default function Clock() {
       className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-700 ${themes[theme]}`}
       onMouseMove={handleMouseMove}
     >
-      {/* CABECERA SUPERIOR */}
+      {/* CABECERA */}
       <div
-        className={`absolute top-5 left-0 right-0 flex justify-between px-10 items-center transition-opacity duration-300 ${
+        className={`absolute top-3 sm:top-6 left-0 right-0 flex flex-col sm:flex-row gap-3 sm:gap-0 justify-between px-6 sm:px-10 items-center transition-opacity duration-300 ${
           showControls ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
-        <h1 className="text-xl font-semibold tracking-tight lowercase">
+        <h1 className="text-lg sm:text-xl font-semibold tracking-tight lowercase">
           que-hora.com
         </h1>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
           {(["light", "dark", "gray"] as const).map((t) => {
             const isActive = theme === t;
             return (
@@ -178,55 +178,66 @@ export default function Clock() {
         </div>
       </div>
 
-      {/* HORA PRINCIPAL */}
-      <div className="flex items-baseline justify-center mt-10">
+      {/* HORA PRINCIPAL — DOS LÍNEAS GIGANTES */}
+      <div className="flex flex-col items-center justify-center mt-16 sm:mt-20 leading-none">
         <h1
-          className="text-[9rem] md:text-[14rem] font-[Space_Mono] leading-none select-none"
+          className="text-[35vw] sm:text-[20rem] md:text-[26rem] lg:text-[30rem] font-[Space_Mono] font-bold tracking-tight select-none leading-[0.9]"
           style={{
             fontVariantNumeric: "tabular-nums",
             fontFeatureSettings: '"tnum"',
           }}
         >
-          {cleanTime}
+          {hours}
         </h1>
-        {use12h && (
-          <span className="ml-4 text-3xl md:text-4xl opacity-70 font-[Space_Mono] select-none">
-            {meridiem}
+        <div className="relative flex items-end justify-center -mt-[4vw] sm:-mt-10">
+          <h1
+            className="text-[35vw] sm:text-[20rem] md:text-[26rem] lg:text-[30rem] font-[Space_Mono] font-bold tracking-tight select-none leading-[0.9]"
+            style={{
+              fontVariantNumeric: "tabular-nums",
+              fontFeatureSettings: '"tnum"',
+            }}
+          >
+            {minutes}
+          </h1>
+          <span className="absolute right-[-10vw] sm:right-[-6rem] text-[8vw] sm:text-[4rem] font-light opacity-60 translate-y-8">
+            {seconds}
           </span>
-        )}
+        </div>
       </div>
 
       {/* BLOQUE INFERIOR */}
-      <div className="mt-12 w-full flex justify-center border-t border-gray-400/30 dark:border-gray-100/20 pt-10">
-        <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-3 gap-8 px-6">
-          {/* CARD Clima */}
-          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 text-center backdrop-blur-sm">
+      <div className="mt-14 sm:mt-20 w-full flex justify-center border-t border-gray-400/30 dark:border-gray-100/20 pt-10 sm:pt-14">
+        <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4 sm:px-6">
+          {/* CARD CLIMA */}
+          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm">
             <img
               src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
               alt={weather.desc}
-              className="w-16 h-16 mb-2"
+              className="w-16 h-16 sm:w-20 sm:h-20 mb-3"
             />
-            <span className="text-2xl md:text-3xl font-semibold">
+            <span className="text-4xl sm:text-5xl md:text-6xl font-semibold">
               {weather.temp}°C
             </span>
-            <span className="text-lg md:text-xl mt-1 opacity-90 whitespace-nowrap">
+            <span className="text-lg sm:text-xl md:text-2xl mt-1 opacity-90 whitespace-nowrap">
               {weather.desc} · {weather.wind} km/h
             </span>
           </div>
 
-          {/* CARD Fecha */}
-          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 text-center backdrop-blur-sm">
-            <span className="text-lg md:text-xl font-medium opacity-90 capitalize">
+          {/* CARD FECHA */}
+          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm">
+            <span className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-medium opacity-90 capitalize">
               {date}
             </span>
           </div>
 
-          {/* CARD Ciudad */}
-          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 text-center backdrop-blur-sm">
-            <span className="text-2xl md:text-3xl font-semibold capitalize">
+          {/* CARD CIUDAD */}
+          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm">
+            <span className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold capitalize">
               {city}
             </span>
-            <span className="text-lg md:text-xl opacity-80">{country}</span>
+            <span className="text-xl sm:text-2xl md:text-3xl opacity-80">
+              {country}
+            </span>
           </div>
         </div>
       </div>
