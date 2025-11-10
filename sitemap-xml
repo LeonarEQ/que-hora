@@ -1,7 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset 
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+>
+  <!-- Página principal ES -->
   <url>
-    <loc>https://que-hora.com/</loc>
+    <loc>https://que-hora.com/es/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://que-hora.com/en/" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://que-hora.com/es/" />
     <priority>1.0</priority>
+    <changefreq>daily</changefreq>
   </url>
+
+  <!-- Página principal EN -->
+  <url>
+    <loc>https://que-hora.com/en/</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://que-hora.com/es/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://que-hora.com/en/" />
+    <priority>1.0</priority>
+    <changefreq>daily</changefreq>
+  </url>
+
+  <!-- Aviso legal / Legal notice -->
+  <url>
+    <loc>https://que-hora.com/es/aviso-legal</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://que-hora.com/en/legal-notice" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://que-hora.com/es/aviso-legal" />
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <url>
+    <loc>https://que-hora.com/en/legal-notice</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://que-hora.com/es/aviso-legal" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://que-hora.com/en/legal-notice" />
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <!-- Política de privacidad / Privacy policy -->
+  <url>
+    <loc>https://que-hora.com/es/politica-privacidad</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://que-hora.com/en/privacy-policy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://que-hora.com/es/politica-privacidad" />
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <url>
+    <loc>https://que-hora.com/en/privacy-policy</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://que-hora.com/es/politica-privacidad" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://que-hora.com/en/privacy-policy" />
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <!-- Política de cookies / Cookies policy -->
+  <url>
+    <loc>https://que-hora.com/es/politica-cookies</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://que-hora.com/en/cookies-policy" />
+    <xhtml:link rel="alternate" hreflang="es" href="https://que-hora.com/es/politica-cookies" />
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
+  <url>
+    <loc>https://que-hora.com/en/cookies-policy</loc>
+    <xhtml:link rel="alternate" hreflang="es" href="https://que-hora.com/es/politica-cookies" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://que-hora.com/en/cookies-policy" />
+    <priority>0.6</priority>
+    <changefreq>monthly</changefreq>
+  </url>
+
 </urlset>

@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
 
+# No indexar carpetas internas ni APIs
+Disallow: /api/
+Disallow: /_next/
+Disallow: /assets/
+
 Sitemap: https://que-hora.com/sitemap.xml
