@@ -108,11 +108,6 @@ export default function Clock() {
   const [timePart] = rawTime.split(" ");
   const [hours, minutes, seconds] = timePart.split(":");
 
-  // Fecha completa
-  const weekday = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
-    weekday: "long",
-    timeZone: timezone,
-  });
 
   const fullDate = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
     day: "2-digit",
@@ -133,6 +128,66 @@ export default function Clock() {
     "bg-white text-black dark:bg-gray-100 dark:text-gray-900 shadow-md";
   const inactiveBtn =
     "bg-gray-300 text-gray-800 dark:bg-gray-800 dark:text-gray-100 opacity-80 hover:opacity-100";
+
+  // Determinar si es España o país hispanohablante
+  const spanishCountries = [
+    "Spain", "España", "Argentina", "Bolivia", "Chile", "Colombia",
+    "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Guatemala",
+    "Honduras", "México", "Nicaragua", "Panamá", "Paraguay",
+    "Perú", "República Dominicana", "Uruguay", "Venezuela"
+  ];
+
+  let weatherLabel = isEnglish ? "Weather" : "Clima";
+
+  if (!isEnglish && location) {
+    if (location.country === "Spain" || location.country === "España") {
+      weatherLabel = "Tiempo";
+    } else if (spanishCountries.includes(location.country)) {
+      weatherLabel = "Clima";
+    } else {
+      weatherLabel = "Clima"; // fallback natural
+    }
+  }
+
+  const formattedDate = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: timezone,
+  });
+
+  // Convertir “19 de noviembre de 2025” → “19/Noviembre/2025”
+  const finalDate = formattedDate
+    .replace(/ de /g, "/")      // cambia " de " por "/"
+    .replace(" ", "")           // limpia espacios extras
+    .replace(/\/([a-z])/i, (m) => "/" + m[1].toUpperCase()); // mes con mayúscula
+
+  // Día de la semana (ya lo tienes)
+  const weekday = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
+    weekday: "long",
+    timeZone: timezone,
+  });
+
+  // Día + mes (ej: "19 de noviembre")
+  const dayMonth = now.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "long",
+    timeZone: timezone,
+  });
+
+  // Capitalizar el mes
+  const dayMonthFormatted =
+    dayMonth.charAt(0).toUpperCase() + dayMonth.slice(1);
+
+  // Año
+  const year = now.toLocaleDateString("es-ES", {
+    year: "numeric",
+    timeZone: timezone,
+  });
+
+
+
+
 
   return (
     <div
@@ -212,28 +267,45 @@ export default function Clock() {
         <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-3 gap-8 px-4 sm:px-6">
 
           {/* CARD 1 — HORA EN CIUDAD */}
-          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm capitalize">
+          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm">
+
+            {/* Título */}
             <span className="text-2xl sm:text-3xl md:text-4xl font-semibold opacity-90">
               {isEnglish ? "Time in" : "Hora en"}
             </span>
 
-            <span className="text-lg sm:text-xl md:text-2xl opacity-90 mt-2">
+            {/* Ciudad — grande */}
+            <span className="text-3xl sm:text-5xl md:text-6xl font-semibold opacity-90 mt-3 capitalize">
               {location ? location.city : "…"}
             </span>
 
-            <span className="text-sm sm:text-base opacity-70 mt-1">
-              {location ? location.country : ""}
+            {/* País — tamaño medio, España corregido */}
+            <span className="text-lg sm:text-2xl md:text-3xl opacity-70 mt-4">
+              {location
+                ? (location.country === "Spain" ? "España" : location.country)
+                : ""}
             </span>
+
           </div>
 
-          {/* CARD 2 — CLIMA */}
+
+
+
+          {/* CARD 2 — CLIMA / TIEMPO (sin repetir la ciudad) */}
           <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm capitalize">
+
             <span className="text-2xl sm:text-3xl md:text-4xl font-semibold opacity-90">
-              {isEnglish ? "Weather" : "Clima"}
+              {weatherLabel}
             </span>
 
             {weather ? (
               <>
+                <img
+                  src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
+                  alt={weather.desc}
+                  className="w-20 h-20 mt-3"
+                />
+
                 <span className="text-4xl font-semibold opacity-90 mt-2">
                   {weather.temp}°C
                 </span>
@@ -249,16 +321,30 @@ export default function Clock() {
             )}
           </div>
 
-          {/* CARD 3 — FECHA */}
-          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm capitalize">
-            <span className="text-3xl sm:text-5xl md:text-6xl font-semibold opacity-90">
+
+
+          {/* CARD 3 — FECHA DESGLOSADA */}
+          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm">
+
+            {/* Día de la semana — grande */}
+            <span className="text-3xl sm:text-5xl md:text-6xl font-semibold opacity-90 capitalize">
               {weekday}
             </span>
 
-            <span className="text-lg sm:text-xl md:text-2xl opacity-90 mt-2">
-              {fullDate}
+            {/* Día + mes — tamaño medio */}
+            <span className="text-lg sm:text-2xl md:text-3xl opacity-90 mt-2 capitalize">
+              {dayMonthFormatted}
             </span>
+
+            {/* Año — tamaño igual al país */}
+            <span className="text-lg sm:text-2xl md:text-3xl opacity-70 mt-1">
+              {year}
+            </span>
+
           </div>
+
+
+
 
         </div>
       </div>
