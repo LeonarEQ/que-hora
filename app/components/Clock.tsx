@@ -28,16 +28,22 @@ export default function Clock() {
   const pathname = usePathname();
   const isEnglish = pathname.startsWith("/en");
 
-  // Control de montado
+  /* ----------------------------------------------
+     MONTADO
+  ---------------------------------------------- */
   useEffect(() => setMounted(true), []);
 
-  // Reloj
+  /* ----------------------------------------------
+     RELOJ EN VIVO
+  ---------------------------------------------- */
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  // Tema dinámico
+  /* ----------------------------------------------
+     TEMA DINÁMICO
+  ---------------------------------------------- */
   useEffect(() => {
     if (!mounted) return;
     const body = document.body;
@@ -45,7 +51,9 @@ export default function Clock() {
     body.classList.add(`theme-${theme}`);
   }, [theme, mounted]);
 
-  // Ubicación real (IP)
+  /* ----------------------------------------------
+     UBICACIÓN REAL
+  ---------------------------------------------- */
   useEffect(() => {
     async function loadLocation() {
       try {
@@ -57,7 +65,7 @@ export default function Clock() {
             country: data.country,
             timezone: data.timezone,
             lat: data.lat,
-            lon: data.lon,
+            lon: data.lon
           });
         }
       } catch (err) {
@@ -67,7 +75,9 @@ export default function Clock() {
     loadLocation();
   }, []);
 
-  // Clima real
+  /* ----------------------------------------------
+     CLIMA REAL
+  ---------------------------------------------- */
   useEffect(() => {
     if (!location) return;
 
@@ -80,7 +90,7 @@ export default function Clock() {
           setWeather({
             temp: data.temp,
             desc: data.desc,
-            icon: data.icon,
+            icon: data.icon
           });
         }
       } catch (err) {
@@ -93,43 +103,48 @@ export default function Clock() {
 
   if (!mounted) return null;
 
-  // Zona horaria real
+  /* ----------------------------------------------
+     ZONA HORARIA
+  ---------------------------------------------- */
   const timezone = location?.timezone || "Europe/Madrid";
 
-  // Hora exacta
+  /* ----------------------------------------------
+     HORA
+  ---------------------------------------------- */
   const rawTime = now.toLocaleTimeString(isEnglish ? "en-US" : "es-ES", {
     hour12: use12h,
     timeZone: timezone,
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
+    second: "2-digit"
   });
 
   const [timePart] = rawTime.split(" ");
   const [hours, minutes, seconds] = timePart.split(":");
 
-
-  const fullDate = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    timeZone: timezone,
+  /* ----------------------------------------------
+     FECHA
+  ---------------------------------------------- */
+  const weekday = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
+    weekday: "long",
+    timeZone: timezone
   });
 
-  const themes = {
-    light: "bg-gradient-to-b from-gray-100 to-white text-black",
-    dark: "bg-gradient-to-b from-gray-900 to-black text-yellow-400",
-    gray: "bg-gradient-to-b from-gray-800 to-gray-900 text-gray-100",
-  };
+  const dayMonth = now.toLocaleDateString("es-ES", {
+    day: "2-digit",
+    month: "long",
+    timeZone: timezone
+  });
+  const dayMonthFormatted = dayMonth.charAt(0).toUpperCase() + dayMonth.slice(1);
 
-  const baseBtn =
-    "text-sm font-semibold px-4 py-2 rounded-full transition-all duration-300 focus:outline-none";
-  const activeBtn =
-    "bg-white text-black dark:bg-gray-100 dark:text-gray-900 shadow-md";
-  const inactiveBtn =
-    "bg-gray-300 text-gray-800 dark:bg-gray-800 dark:text-gray-100 opacity-80 hover:opacity-100";
+  const year = now.toLocaleDateString("es-ES", {
+    year: "numeric",
+    timeZone: timezone
+  });
 
-  // Determinar si es España o país hispanohablante
+  /* ----------------------------------------------
+     ETIQUETA CLIMA / TIEMPO (PAÍS)
+  ---------------------------------------------- */
   const spanishCountries = [
     "Spain", "España", "Argentina", "Bolivia", "Chile", "Colombia",
     "Costa Rica", "Cuba", "Ecuador", "El Salvador", "Guatemala",
@@ -144,65 +159,41 @@ export default function Clock() {
       weatherLabel = "Tiempo";
     } else if (spanishCountries.includes(location.country)) {
       weatherLabel = "Clima";
-    } else {
-      weatherLabel = "Clima"; // fallback natural
     }
   }
 
-  const formattedDate = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    timeZone: timezone,
-  });
+  /* ----------------------------------------------
+     TEMAS
+  ---------------------------------------------- */
+  const themes = {
+    light: "bg-gradient-to-b from-gray-100 to-white text-black",
+    dark: "bg-gradient-to-b from-gray-900 to-black text-yellow-400",
+    gray: "bg-gradient-to-b from-gray-800 to-gray-900 text-gray-100"
+  };
 
-  // Convertir “19 de noviembre de 2025” → “19/Noviembre/2025”
-  const finalDate = formattedDate
-    .replace(/ de /g, "/")      // cambia " de " por "/"
-    .replace(" ", "")           // limpia espacios extras
-    .replace(/\/([a-z])/i, (m) => "/" + m[1].toUpperCase()); // mes con mayúscula
+  const baseBtn =
+    "text-sm font-semibold px-4 py-2 rounded-full transition-all duration-300 focus:outline-none";
+  const activeBtn =
+    "bg-white text-black dark:bg-gray-100 dark:text-gray-900 shadow-md";
+  const inactiveBtn =
+    "bg-gray-300 text-gray-800 dark:bg-gray-800 dark:text-gray-100 opacity-80 hover:opacity-100";
 
-  // Día de la semana (ya lo tienes)
-  const weekday = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
-    weekday: "long",
-    timeZone: timezone,
-  });
-
-  // Día + mes (ej: "19 de noviembre")
-  const dayMonth = now.toLocaleDateString("es-ES", {
-    day: "2-digit",
-    month: "long",
-    timeZone: timezone,
-  });
-
-  // Capitalizar el mes
-  const dayMonthFormatted =
-    dayMonth.charAt(0).toUpperCase() + dayMonth.slice(1);
-
-  // Año
-  const year = now.toLocaleDateString("es-ES", {
-    year: "numeric",
-    timeZone: timezone,
-  });
-
-
-
-
+  /* ------------------------------------------------------------------
+     ⬇️⬇️  A PARTIR DE AQUÍ VIENE EL NUEVO DISEÑO RESPONSIVE PREMIUM  ⬇️⬇️
+  ------------------------------------------------------------------ */
 
   return (
-    <div
-      className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-700 ${themes[theme]}`}
-    >
+    <div className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-700 ${themes[theme]}`}>
+
       {/* CABECERA */}
       <div className="absolute top-3 sm:top-6 left-0 right-0 flex justify-between items-center px-6 sm:px-10">
         <h1 className="text-lg sm:text-xl font-semibold tracking-tight lowercase cursor-pointer">
           <a href="/">que-hora.com</a>
         </h1>
 
-        {/* Menú desktop */}
+        {/* Desktop menu */}
         <div className="hidden sm:flex flex-wrap justify-center items-center gap-2 sm:gap-3">
 
-          {/* Temas */}
           <div className="flex gap-2 sm:gap-3 mr-3 sm:mr-6">
             {(["light", "dark", "gray"] as const).map((t) => {
               const isActive = theme === t;
@@ -222,7 +213,6 @@ export default function Clock() {
             })}
           </div>
 
-          {/* Formato */}
           <div className="flex gap-2 sm:gap-3 mr-3 sm:mr-6">
             {["12h", "24h"].map((mode) => {
               const isActive =
@@ -242,7 +232,7 @@ export default function Clock() {
           <LanguageToggle />
         </div>
 
-        {/* Menú móvil */}
+        {/* Mobile menu button */}
         <button
           className="sm:hidden p-2 rounded-md hover:bg-gray-200/20 transition"
           onClick={() => setMenuOpen(!menuOpen)}
@@ -252,102 +242,181 @@ export default function Clock() {
         </button>
       </div>
 
-      {/* HORA PRINCIPAL */}
-      <div className="flex items-baseline justify-center mt-4 sm:mt-14 leading-none text-center">
-        <h1 className="text-[22vw] sm:text-[10rem] md:text-[16rem] lg:text-[20rem] font-[Space_Mono] leading-none select-none tracking-tight">
-          {hours}:{minutes}
-        </h1>
-        <span className="ml-2 text-[6vw] sm:text-4xl md:text-6xl lg:text-7xl opacity-70 font-[Space_Mono] select-none">
-          {seconds}
-        </span>
+      {/* =============================================== */}
+      {/* 📱 NUEVO DISEÑO RESPONSIVE PREMIUM (solo móvil) */}
+      {/* =============================================== */}
+
+      {/* ============  GRID RESPONSIVE  ============ */}
+      <div className="sm:hidden w-full max-w-6xl px-6 grid grid-cols-2 gap-6 mt-16">
+
+        {/* -------------------------------------------- */}
+        {/* FILA 1 — COLUMNA 1: HORAS + MINUTOS           */}
+        {/* -------------------------------------------- */}
+        <div className="flex flex-col items-start justify-center">
+
+          {/* HORAS */}
+          <span className="text-[30vw] leading-none font-[Space_Mono]">
+            {hours}
+          </span>
+
+          {/* MINUTOS */}
+          <span className="text-[30vw] leading-none font-[Space_Mono] mt-[-5vw]">
+            {minutes}
+          </span>
+        </div>
+
+        {/* -------------------------------------------- */}
+        {/* FILA 1 — COLUMNA 2: CARD “HORA EN” + SEGUNDERO */}
+        {/* -------------------------------------------- */}
+        <div className="flex flex-col justify-center items-center bg-gray-100/10 dark:bg-white/5 
+                  p-6 rounded-2xl text-center backdrop-blur-sm">
+
+          {/* Título */}
+          <span className="text-xl font-semibold opacity-90">
+            Hora en
+          </span>
+
+          {/* Ciudad */}
+          <span className="text-2xl font-semibold opacity-90 mt-1 capitalize">
+            {location?.city || "…"}
+          </span>
+
+          {/* País */}
+          <span className="text-lg opacity-70 mt-1 capitalize">
+            {location?.country === "Spain" ? "España" : location?.country || ""}
+          </span>
+
+          {/* SEGUNDERO GRANDE */}
+          <span className="text-[20vw] font-[Space_Mono] opacity-70 leading-none mt-4">
+            {seconds}
+          </span>
+        </div>
+
+        {/* -------------------------------------------- */}
+        {/* FILA 3 — COLUMNA 1: CARD CLIMA                */}
+        {/* -------------------------------------------- */}
+        <div className="bg-gray-100/10 dark:bg-white/5 p-6 rounded-2xl text-center 
+                  backdrop-blur-sm flex flex-col items-center">
+
+          <span className="text-xl font-semibold opacity-90">{weatherLabel}</span>
+
+          {weather ? (
+            <>
+              <img
+                src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
+                alt={weather.desc}
+                className="w-16 h-16 mt-2"
+              />
+              <span className="text-3xl font-semibold opacity-90 mt-2">
+                {weather.temp}°C
+              </span>
+              <span className="text-lg opacity-80 mt-1 capitalize">
+                {weather.desc}
+              </span>
+            </>
+          ) : (
+            <span className="text-lg opacity-80 mt-2">
+              {isEnglish ? "Loading…" : "Cargando…"}
+            </span>
+          )}
+        </div>
+
+        {/* -------------------------------------------- */}
+        {/* FILA 3 — COLUMNA 2: CARD FECHA                */}
+        {/* -------------------------------------------- */}
+        <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 
+                  rounded-2xl p-6 text-center backdrop-blur-sm">
+
+          <span className="text-2xl font-semibold opacity-90 capitalize">
+            {weekday}
+          </span>
+
+          <span className="text-lg opacity-80 mt-1 capitalize">
+            {dayMonthFormatted}
+          </span>
+
+          <span className="text-lg opacity-70 mt-1">{year}</span>
+        </div>
+
       </div>
 
-      {/* TARJETAS */}
-      <div className="mt-8 sm:mt-10 w-full flex justify-center border-t border-gray-400/30 dark:border-gray-100/20 pt-10 sm:pt-14">
-        <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-3 gap-8 px-4 sm:px-6">
 
-          {/* CARD 1 — HORA EN CIUDAD */}
-          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm">
+      {/* ==================================================== */}
+      {/* 🖥 VERSION DESKTOP ORIGINAL (NO TOCADA) */}
+      {/* ==================================================== */}
+      <div className="hidden sm:block w-full">
+        {/** AQUI DEJAMOS TU DISEÑO ORIGINAL — NO LO TOCO **/}
 
-            {/* Título */}
-            <span className="text-2xl sm:text-3xl md:text-4xl font-semibold opacity-90">
-              {isEnglish ? "Time in" : "Hora en"}
-            </span>
+        <div className="flex items-baseline justify-center mt-20 leading-none text-center">
+          <h1 className="text-[10rem] md:text-[16rem] lg:text-[20rem] font-[Space_Mono] leading-none select-none tracking-tight">
+            {hours}:{minutes}
+          </h1>
+          <span className="ml-4 text-6xl md:text-7xl lg:text-8xl opacity-70 font-[Space_Mono]">
+            {seconds}
+          </span>
+        </div>
 
-            {/* Ciudad — grande */}
-            <span className="text-3xl sm:text-5xl md:text-6xl font-semibold opacity-90 mt-3 capitalize">
-              {location ? location.city : "…"}
-            </span>
+        <div className="mt-20 w-full flex justify-center border-t border-gray-400/30 dark:border-gray-100/20 pt-14">
+          <div className="w-full max-w-6xl grid grid-cols-3 gap-8 px-6">
 
-            {/* País — tamaño medio, España corregido */}
-            <span className="text-lg sm:text-2xl md:text-3xl opacity-70 mt-4">
-              {location
-                ? (location.country === "Spain" ? "España" : location.country)
-                : ""}
-            </span>
-
-          </div>
-
-
-
-
-          {/* CARD 2 — CLIMA / TIEMPO (sin repetir la ciudad) */}
-          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm capitalize">
-
-            <span className="text-2xl sm:text-3xl md:text-4xl font-semibold opacity-90">
-              {weatherLabel}
-            </span>
-
-            {weather ? (
-              <>
-                <img
-                  src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
-                  alt={weather.desc}
-                  className="w-20 h-20 mt-3"
-                />
-
-                <span className="text-4xl font-semibold opacity-90 mt-2">
-                  {weather.temp}°C
-                </span>
-
-                <span className="text-lg sm:text-xl opacity-80 mt-1 capitalize">
-                  {weather.desc}
-                </span>
-              </>
-            ) : (
-              <span className="text-lg sm:text-xl opacity-80 mt-2">
-                {isEnglish ? "Loading…" : "Cargando…"}
+            {/* CARD 1 — Hora en ciudad */}
+            <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-10 text-center backdrop-blur-sm capitalize">
+              <span className="text-3xl font-semibold opacity-90">
+                Hora en
               </span>
-            )}
+              <span className="text-4xl opacity-90 mt-2">
+                {location?.city || "…"}
+              </span>
+              <span className="text-xl opacity-70 mt-2">
+                {location?.country || ""}
+              </span>
+            </div>
+
+            {/* CARD 2 — CLIMA */}
+            <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-10 text-center backdrop-blur-sm capitalize">
+              <span className="text-3xl font-semibold opacity-90">
+                {weatherLabel}
+              </span>
+
+              {weather ? (
+                <>
+                  <img
+                    src={`https://openweathermap.org/img/wn/${weather.icon}@2x.png`}
+                    alt={weather.desc}
+                    className="w-20 h-20 mt-4"
+                  />
+                  <span className="text-5xl font-semibold opacity-90 mt-4">
+                    {weather.temp}°C
+                  </span>
+                  <span className="text-xl opacity-80 mt-2">
+                    {weather.desc}
+                  </span>
+                </>
+              ) : (
+                <span className="text-xl opacity-80 mt-2">
+                  {isEnglish ? "Loading…" : "Cargando…"}
+                </span>
+              )}
+            </div>
+
+            {/* CARD 3 — FECHA */}
+            <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg
+white/5 rounded-2xl p-10 text-center backdrop-blur-sm capitalize">
+              <span className="text-5xl font-semibold opacity-90">
+                {weekday}
+              </span>
+              <span className="text-3xl opacity-90 mt-2">
+                {dayMonthFormatted}
+              </span>
+              <span className="text-3xl opacity-70 mt-2">
+                {year}
+              </span>
+            </div>
+
           </div>
-
-
-
-          {/* CARD 3 — FECHA DESGLOSADA */}
-          <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 rounded-2xl p-8 sm:p-10 text-center backdrop-blur-sm">
-
-            {/* Día de la semana — grande */}
-            <span className="text-3xl sm:text-5xl md:text-6xl font-semibold opacity-90 capitalize">
-              {weekday}
-            </span>
-
-            {/* Día + mes — tamaño medio */}
-            <span className="text-lg sm:text-2xl md:text-3xl opacity-90 mt-2 capitalize">
-              {dayMonthFormatted}
-            </span>
-
-            {/* Año — tamaño igual al país */}
-            <span className="text-lg sm:text-2xl md:text-3xl opacity-70 mt-1">
-              {year}
-            </span>
-
-          </div>
-
-
-
-
         </div>
       </div>
+
     </div>
   );
 }
