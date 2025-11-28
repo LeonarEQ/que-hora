@@ -124,6 +124,15 @@ export default function Clock() {
     timeZone: timezone,
   });
 
+  /* NÚMERO DE SEMANA */
+  const weekNumber = Math.ceil(
+    ((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 86400000 +
+      new Date(now.getFullYear(), 0, 1).getDay() +
+      1) /
+    7
+  );
+  const weekLabel = isEnglish ? "Week" : "Semana";
+
   /* CLIMA / TIEMPO */
   const spanishCountries = [
     "Spain", "España", "Argentina", "Bolivia", "Chile", "Colombia",
@@ -142,6 +151,12 @@ export default function Clock() {
       weatherLabel = "Clima";
     }
   }
+
+  /* ✅ TRADUCCIÓN DEL PAÍS */
+  const countryDisplay =
+    !isEnglish && location?.country === "Spain"
+      ? "España"
+      : location?.country || "";
 
   /* TEMAS */
   const themes = {
@@ -226,11 +241,11 @@ export default function Clock() {
         <div className="flex flex-col justify-center items-center bg-gray-100/10 dark:bg-white/5 
               p-6 rounded-2xl text-center backdrop-blur-sm">
           <span className="text-xl font-semibold opacity-90">{hourLabel}</span>
-          <span className="text-2xl font-semibold opacity-90 mt-1 capitalize">
+          <span className="text-2xl font-semibold opacity-90 mt-1">
             {location?.city || "…"}
           </span>
           <span className="text-lg opacity-70 mt-1 capitalize">
-            {location?.country === "Spain" ? "España" : location?.country || ""}
+            {countryDisplay}
           </span>
           <span className="text-[20vw] font-[Space_Mono] opacity-70 leading-none mt-4">
             {seconds}
@@ -270,6 +285,9 @@ export default function Clock() {
             {dayMonthFormatted}
           </span>
           <span className="text-lg opacity-70 mt-1">{year}</span>
+          <span className="text-sm opacity-60 mt-2">
+            {weekLabel} {weekNumber}
+          </span>
         </div>
       </div>
 
@@ -290,10 +308,10 @@ export default function Clock() {
           <div className="w-full max-w-6xl grid grid-cols-3 gap-8 px-6">
             {/* CARD — TIME IN */}
             <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 
-                    rounded-2xl p-10 text-center backdrop-blur-sm capitalize">
+                    rounded-2xl p-10 text-center backdrop-blur-sm">
               <span className="text-3xl font-semibold opacity-90">{hourLabel}</span>
               <span className="text-4xl opacity-90 mt-2">{location?.city || "…"}</span>
-              <span className="text-xl opacity-70 mt-2">{location?.country || ""}</span>
+              <span className="text-xl opacity-70 mt-2">{countryDisplay}</span>
             </div>
 
             {/* CARD — WEATHER */}
@@ -323,6 +341,9 @@ export default function Clock() {
               <span className="text-5xl font-semibold opacity-90">{weekday}</span>
               <span className="text-3xl opacity-90 mt-2">{dayMonthFormatted}</span>
               <span className="text-3xl opacity-70 mt-2">{year}</span>
+              <span className="text-xl opacity-70 mt-2">
+                {weekLabel} {weekNumber}
+              </span>
             </div>
           </div>
         </div>
