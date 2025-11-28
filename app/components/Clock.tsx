@@ -112,14 +112,14 @@ export default function Clock() {
     timeZone: timezone,
   });
 
-  const dayMonth = now.toLocaleDateString("es-ES", {
+  const dayMonth = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
     day: "2-digit",
     month: "long",
     timeZone: timezone,
   });
   const dayMonthFormatted = dayMonth.charAt(0).toUpperCase() + dayMonth.slice(1);
 
-  const year = now.toLocaleDateString("es-ES", {
+  const year = now.toLocaleDateString(isEnglish ? "en-US" : "es-ES", {
     year: "numeric",
     timeZone: timezone,
   });
@@ -132,6 +132,7 @@ export default function Clock() {
     "Perú", "República Dominicana", "Uruguay", "Venezuela"
   ];
 
+  const hourLabel = isEnglish ? "Time in" : "Hora en";
   let weatherLabel = isEnglish ? "Weather" : "Clima";
 
   if (!isEnglish && location) {
@@ -154,13 +155,8 @@ export default function Clock() {
   const activeBtn = "bg-white text-black dark:bg-gray-100 dark:text-gray-900 shadow-md";
   const inactiveBtn = "bg-gray-300 text-gray-800 dark:bg-gray-800 dark:text-gray-100 opacity-80 hover:opacity-100";
 
-  /* ================================================================ */
-  /*                    DISEÑO RESPONSIVE PREMIUM                     */
-  /* ================================================================ */
-
   return (
     <div className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-700 ${themes[theme]}`}>
-
       {/* CABECERA */}
       <div className="absolute top-3 sm:top-6 left-0 right-0 flex justify-between items-center px-6 sm:px-10">
         <h1 className="text-lg sm:text-xl font-semibold lowercase cursor-pointer">
@@ -169,7 +165,6 @@ export default function Clock() {
 
         {/* Desktop */}
         <div className="hidden sm:flex items-center gap-4">
-
           <div className="flex gap-3">
             {(["light", "dark", "gray"] as const).map((t) => {
               const isActive = theme === t;
@@ -221,38 +216,31 @@ export default function Clock() {
       {/* 📱 RESPONSIVE (solo móvil) */}
       {/* =========================== */}
       <div className="sm:hidden w-full max-w-6xl px-6 grid grid-cols-2 gap-6 mt-20">
-
         {/* HORAS + MINUTOS */}
         <div className="flex flex-col items-start justify-center">
           <span className="text-[30vw] leading-none font-[Space_Mono]">{hours}</span>
           <span className="text-[30vw] leading-none font-[Space_Mono] mt-[-5vw]">{minutes}</span>
         </div>
 
-        {/* CARD — HORA EN + SEGUNDERO */}
+        {/* CARD — TIME IN + SECONDS */}
         <div className="flex flex-col justify-center items-center bg-gray-100/10 dark:bg-white/5 
               p-6 rounded-2xl text-center backdrop-blur-sm">
-
-          <span className="text-xl font-semibold opacity-90">Hora en</span>
-
+          <span className="text-xl font-semibold opacity-90">{hourLabel}</span>
           <span className="text-2xl font-semibold opacity-90 mt-1 capitalize">
             {location?.city || "…"}
           </span>
-
           <span className="text-lg opacity-70 mt-1 capitalize">
             {location?.country === "Spain" ? "España" : location?.country || ""}
           </span>
-
           <span className="text-[20vw] font-[Space_Mono] opacity-70 leading-none mt-4">
             {seconds}
           </span>
         </div>
 
-        {/* CARD — CLIMA */}
+        {/* CARD — WEATHER */}
         <div className="bg-gray-100/10 dark:bg-white/5 p-6 rounded-2xl text-center 
               backdrop-blur-sm flex flex-col items-center">
-
           <span className="text-xl font-semibold opacity-90">{weatherLabel}</span>
-
           {weather ? (
             <>
               <img
@@ -272,27 +260,23 @@ export default function Clock() {
           )}
         </div>
 
-        {/* CARD — FECHA */}
+        {/* CARD — DATE */}
         <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5
               rounded-2xl p-6 text-center backdrop-blur-sm">
-
           <span className="text-2xl font-semibold opacity-90 capitalize">
             {weekday}
           </span>
-
           <span className="text-lg opacity-80 mt-1 capitalize">
             {dayMonthFormatted}
           </span>
-
           <span className="text-lg opacity-70 mt-1">{year}</span>
         </div>
       </div>
 
       {/* =============================== */}
-      {/* 🖥 VERSION DESKTOP (original) */}
+      {/* 🖥 DESKTOP VERSION */}
       {/* =============================== */}
       <div className="hidden sm:block w-full">
-
         <div className="flex items-baseline justify-center mt-20 leading-none text-center">
           <h1 className="text-[10rem] md:text-[16rem] lg:text-[20rem] font-[Space_Mono] leading-none">
             {hours}:{minutes}
@@ -304,22 +288,18 @@ export default function Clock() {
 
         <div className="mt-20 w-full flex justify-center border-t border-gray-400/30 dark:border-gray-100/20 pt-14">
           <div className="w-full max-w-6xl grid grid-cols-3 gap-8 px-6">
-
-            {/* CARD — Hora en */}
+            {/* CARD — TIME IN */}
             <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 
                     rounded-2xl p-10 text-center backdrop-blur-sm capitalize">
-
-              <span className="text-3xl font-semibold opacity-90">Hora en</span>
+              <span className="text-3xl font-semibold opacity-90">{hourLabel}</span>
               <span className="text-4xl opacity-90 mt-2">{location?.city || "…"}</span>
               <span className="text-xl opacity-70 mt-2">{location?.country || ""}</span>
             </div>
 
-            {/* CARD — Clima */}
+            {/* CARD — WEATHER */}
             <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 
                     rounded-2xl p-10 text-center backdrop-blur-sm capitalize">
-
               <span className="text-3xl font-semibold opacity-90">{weatherLabel}</span>
-
               {weather ? (
                 <>
                   <img
@@ -337,19 +317,16 @@ export default function Clock() {
               )}
             </div>
 
-            {/* CARD — Fecha  ✔ FIX CLASE ROTA */}
+            {/* CARD — DATE */}
             <div className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 
                     rounded-2xl p-10 text-center backdrop-blur-sm capitalize">
-
               <span className="text-5xl font-semibold opacity-90">{weekday}</span>
               <span className="text-3xl opacity-90 mt-2">{dayMonthFormatted}</span>
               <span className="text-3xl opacity-70 mt-2">{year}</span>
             </div>
-
           </div>
         </div>
       </div>
-
     </div>
   );
 }
