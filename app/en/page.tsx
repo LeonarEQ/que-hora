@@ -5,8 +5,10 @@ export const metadata = {
   description:
     "Check the current time and weather in your city with Sunvalis. Accurate, fast and updated every second.",
   alternates: {
+    canonical: "https://que-hora.com/en",
     languages: {
       es: "https://que-hora.com/es",
+      en: "https://que-hora.com/en",
     },
   },
 };
