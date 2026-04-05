@@ -2,15 +2,11 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   try {
-    console.log(">>> /api/location ejecutado");
-
-    // 1. Obtener IP REAL del usuario
     let ip =
       req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
       req.headers.get("x-real-ip") ||
       "";
 
-    // Si es localhost o privada, usa fallback
     if (
       !ip ||
       ip === "::1" ||
@@ -18,18 +14,13 @@ export async function GET(req: Request) {
       ip.startsWith("192.168.") ||
       ip.startsWith("10.")
     ) {
-      ip = "8.8.8.8"; // IP pública válida
+      ip = "8.8.8.8";
     }
 
-    console.log("IP final:", ip);
-
-    // 2. Consultar ipwho.is con la IP del usuario
-    const res = await fetch(`https://ipwho.is/${ip}`); // ← sin espacio
+    const res = await fetch(`http://ip-api.com/json/${ip}`);
     const data = await res.json();
 
-    console.log("ipwho.is response:", data);
-
-    if (!data || data.success === false) {
+    if (!data || data.status !== "success") {
       return NextResponse.json(
         { error: "No se pudo obtener la ubicación del usuario." },
         { status: 500 },
@@ -39,9 +30,9 @@ export async function GET(req: Request) {
     return NextResponse.json({
       city: data.city,
       country: data.country,
-      timezone: data.timezone?.id || "Europe/Madrid",
-      lat: data.latitude,
-      lon: data.longitude,
+      timezone: data.timezone || "Europe/Madrid",
+      lat: data.lat,
+      lon: data.lon,
     });
   } catch (error) {
     console.error("Error en /api/location:", error);
