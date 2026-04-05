@@ -11,14 +11,20 @@ export async function GET(req: Request) {
       "";
 
     // Si es localhost o privada, usa fallback
-    if (!ip || ip === "::1" || ip.startsWith("127.") || ip.startsWith("192.168.") || ip.startsWith("10.")) {
+    if (
+      !ip ||
+      ip === "::1" ||
+      ip.startsWith("127.") ||
+      ip.startsWith("192.168.") ||
+      ip.startsWith("10.")
+    ) {
       ip = "8.8.8.8"; // IP pública válida
     }
 
     console.log("IP final:", ip);
 
     // 2. Consultar ipwho.is con la IP del usuario
-    const res = await fetch(`https://ipwho.is/${ip}`); // ← sin espacio
+    const res = await fetch(`https://ipapi.co/${ip}`); // ← sin espacio
     const data = await res.json();
 
     console.log("ipwho.is response:", data);
@@ -26,7 +32,7 @@ export async function GET(req: Request) {
     if (!data || data.success === false) {
       return NextResponse.json(
         { error: "No se pudo obtener la ubicación del usuario." },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -41,7 +47,7 @@ export async function GET(req: Request) {
     console.error("Error en /api/location:", error);
     return NextResponse.json(
       { error: "Error interno obteniendo la ubicación." },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
