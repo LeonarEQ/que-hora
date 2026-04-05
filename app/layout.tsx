@@ -29,6 +29,17 @@ export const metadata: Metadata = {
       en: "https://que-hora.com/en",
     },
   },
+  icons: {
+    icon: [
+      { url: "/qh-navy-favicon.ico" },
+      { url: "/qh-navy-favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/qh-navy-favicon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: ["/qh-navy-favicon.ico"],
+    apple: [
+      { url: "/qh-navy-favicon-180.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   openGraph: {
     title: "que-hora.com - Hora actual y clima en tiempo real",
     description:
