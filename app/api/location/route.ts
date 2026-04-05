@@ -24,7 +24,7 @@ export async function GET(req: Request) {
     console.log("IP final:", ip);
 
     // 2. Consultar ipwho.is con la IP del usuario
-    const res = await fetch(`https://ipapi.co/${ip}`); // ← sin espacio
+    const res = await fetch(`https://ipwho.is/${ip}`); // ← sin espacio
     const data = await res.json();
 
     console.log("ipwho.is response:", data);
