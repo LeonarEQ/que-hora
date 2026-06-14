@@ -1,8 +1,19 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { LanguageToggle } from "./LanguageToggle";
-import { CalendarDays, ChevronLeft, ChevronRight, Menu, X } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  Menu,
+  Pause,
+  Play,
+  RotateCcw,
+  Timer,
+  X,
+} from "lucide-react";
 import Link from "next/link";
 
 export default function Clock() {
@@ -12,6 +23,13 @@ export default function Clock() {
   const [use12h, setUse12h] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [stopwatchOpen, setStopwatchOpen] = useState(false);
+  const [stopwatchRunning, setStopwatchRunning] = useState(false);
+  const [stopwatchElapsed, setStopwatchElapsed] = useState(0);
+  const [stopwatchMode, setStopwatchMode] = useState<"up" | "down">("up");
+  const [stopwatchDuration, setStopwatchDuration] = useState(0);
+  const stopwatchElapsedRef = useRef(0);
+  const stopwatchDurationRef = useRef(0);
   const [calendarMonth, setCalendarMonth] = useState(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
@@ -54,6 +72,7 @@ export default function Clock() {
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
       setCalendarOpen(localStorage.getItem("calendarOpen") === "true");
+      setStopwatchOpen(localStorage.getItem("stopwatchOpen") === "true");
     });
 
     return () => cancelAnimationFrame(frame);
@@ -64,6 +83,42 @@ export default function Clock() {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  /* CRONOMETRO */
+  useEffect(() => {
+    stopwatchElapsedRef.current = stopwatchElapsed;
+  }, [stopwatchElapsed]);
+
+  useEffect(() => {
+    stopwatchDurationRef.current = stopwatchDuration;
+  }, [stopwatchDuration]);
+
+  useEffect(() => {
+    if (!stopwatchRunning) return;
+
+    const startedAt =
+      stopwatchMode === "down"
+        ? Date.now() - (stopwatchDurationRef.current - stopwatchElapsedRef.current)
+        : Date.now() - stopwatchElapsedRef.current;
+    const t = setInterval(() => {
+      if (stopwatchMode === "down") {
+        const nextRemaining = Math.max(
+          stopwatchDurationRef.current - (Date.now() - startedAt),
+          0,
+        );
+        setStopwatchElapsed(nextRemaining);
+
+        if (nextRemaining === 0) {
+          setStopwatchRunning(false);
+        }
+        return;
+      }
+
+      setStopwatchElapsed(Date.now() - startedAt);
+    }, 50);
+
+    return () => clearInterval(t);
+  }, [stopwatchMode, stopwatchRunning]);
 
   /* TEMA */
   useEffect(() => {
@@ -243,7 +298,7 @@ export default function Clock() {
   };
 
   const baseBtn =
-    "text-sm font-semibold px-4 py-2 rounded-full transition-all duration-300";
+    "whitespace-nowrap text-sm font-semibold px-4 py-2 rounded-full transition-all duration-300";
   const activeBtn =
     "bg-white text-black dark:bg-gray-100 dark:text-gray-900 shadow-md";
   const inactiveBtn =
@@ -257,6 +312,51 @@ export default function Clock() {
         : isEnglish
           ? "Calendar"
           : "Calendario";
+  const clockLabel = isChinese
+    ? "æ—¶é’Ÿ"
+    : isPortuguese
+      ? "Relogio"
+      : isDutch
+        ? "Klok"
+        : isEnglish
+          ? "Clock"
+          : "Reloj";
+  const stopwatchLabel = isChinese
+    ? "ç§’è¡¨"
+    : isPortuguese
+      ? "Cronometro"
+      : isDutch
+        ? "Stopwatch"
+        : isEnglish
+          ? "Stopwatch"
+          : "Cronometro";
+  const stopwatchStartLabel = isChinese
+    ? "å¼€å§‹"
+    : isPortuguese
+      ? "Iniciar"
+      : isDutch
+        ? "Start"
+        : isEnglish
+          ? "Start"
+          : "Iniciar";
+  const stopwatchPauseLabel = isChinese
+    ? "æš‚åœ"
+    : isPortuguese
+      ? "Pausar"
+      : isDutch
+        ? "Pauze"
+        : isEnglish
+          ? "Pause"
+          : "Pausar";
+  const stopwatchResetLabel = isChinese
+    ? "é‡ç½®"
+    : isPortuguese
+      ? "Reiniciar"
+      : isDutch
+        ? "Reset"
+        : isEnglish
+          ? "Reset"
+          : "Reiniciar";
   const selectedMonthLabel = calendarMonth.toLocaleDateString(locale, {
     month: "long",
     year: "numeric",
@@ -305,9 +405,61 @@ export default function Clock() {
     setCalendarOpen((open) => {
       const nextOpen = !open;
       localStorage.setItem("calendarOpen", String(nextOpen));
+      if (nextOpen) {
+        setStopwatchOpen(false);
+        localStorage.setItem("stopwatchOpen", "false");
+      }
       return nextOpen;
     });
   };
+
+  const showClock = () => {
+    setCalendarOpen(false);
+    setStopwatchOpen(false);
+    localStorage.setItem("calendarOpen", "false");
+    localStorage.setItem("stopwatchOpen", "false");
+  };
+
+  const toggleStopwatch = () => {
+    setStopwatchOpen((open) => {
+      const nextOpen = !open;
+      localStorage.setItem("stopwatchOpen", String(nextOpen));
+      if (nextOpen) {
+        setCalendarOpen(false);
+        localStorage.setItem("calendarOpen", "false");
+      }
+      return nextOpen;
+    });
+  };
+
+  const resetStopwatch = () => {
+    setStopwatchRunning(false);
+    setStopwatchElapsed(0);
+  };
+
+  const startCountdown = (minutes: number) => {
+    const duration = minutes * 60000;
+    setStopwatchMode("down");
+    setStopwatchDuration(duration);
+    setStopwatchElapsed(duration);
+    setStopwatchRunning(true);
+  };
+
+  const startStopwatch = () => {
+    if (stopwatchMode === "down" && stopwatchElapsed === 0) {
+      setStopwatchElapsed(stopwatchDuration);
+    }
+    setStopwatchRunning((running) => !running);
+  };
+
+  const stopwatchMinutes = Math.floor(stopwatchElapsed / 60000);
+  const stopwatchSeconds = Math.floor((stopwatchElapsed % 60000) / 1000);
+  const stopwatchCentiseconds = Math.floor((stopwatchElapsed % 1000) / 10);
+  const stopwatchDisplay = `${String(stopwatchMinutes).padStart(2, "0")}:${String(
+    stopwatchSeconds,
+  ).padStart(2, "0")}.${String(stopwatchCentiseconds).padStart(2, "0")}`;
+  const toolPanelOpen = calendarOpen || stopwatchOpen;
+  const countdownPresets = [5, 10, 15, 30];
 
   const calendarPanel = (
     <aside className="w-full rounded-2xl bg-gray-100/10 p-7 backdrop-blur-sm dark:bg-white/5 sm:p-10">
@@ -358,6 +510,52 @@ export default function Clock() {
     </aside>
   );
 
+  const stopwatchPanel = (
+    <aside className="w-full text-center">
+      <div className="font-[Space_Mono] text-[23vw] leading-none sm:text-[7rem] md:text-[10rem] lg:text-[13rem]">
+        {stopwatchDisplay}
+      </div>
+
+      <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
+        <button
+          className="flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-black shadow-md transition hover:opacity-90"
+          onClick={startStopwatch}
+          type="button"
+        >
+          {stopwatchRunning ? <Pause size={18} /> : <Play size={18} />}
+          {stopwatchRunning ? stopwatchPauseLabel : stopwatchStartLabel}
+        </button>
+        <button
+          className="flex items-center gap-2 rounded-full bg-gray-300 px-6 py-3 text-base font-semibold text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+          onClick={resetStopwatch}
+          type="button"
+        >
+          <RotateCcw size={18} />
+          {stopwatchResetLabel}
+        </button>
+        {countdownPresets.map((minutes) => {
+          const isActive =
+            stopwatchMode === "down" && stopwatchDuration === minutes * 60000;
+
+          return (
+            <button
+              className={`rounded-full px-5 py-3 text-base font-semibold transition ${
+                isActive
+                  ? "bg-white text-black shadow-md"
+                  : "bg-gray-300 text-gray-800 opacity-90 hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+              }`}
+              key={minutes}
+              onClick={() => startCountdown(minutes)}
+              type="button"
+            >
+              {minutes} min
+            </button>
+          );
+        })}
+      </div>
+    </aside>
+  );
+
   return (
     <div
       className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-700 ${themes[theme]}`}
@@ -368,7 +566,17 @@ export default function Clock() {
           <Link href="/">que-hora.com</Link>
         </h1>
 
-        <div className="absolute left-1/2 hidden -translate-x-1/2 sm:flex">
+        <div className="absolute left-1/2 top-12 z-20 hidden -translate-x-1/2 gap-3 sm:flex xl:top-0">
+          <button
+            onClick={showClock}
+            className={`flex items-center gap-2 ${
+              !toolPanelOpen ? activeBtn : inactiveBtn
+            } ${baseBtn}`}
+            type="button"
+          >
+            <Clock3 size={16} />
+            {clockLabel}
+          </button>
           <button
             onClick={toggleCalendar}
             className={`flex items-center gap-2 ${
@@ -378,6 +586,16 @@ export default function Clock() {
           >
             <CalendarDays size={16} />
             {calendarLabel}
+          </button>
+          <button
+            onClick={toggleStopwatch}
+            className={`flex items-center gap-2 ${
+              stopwatchOpen ? activeBtn : inactiveBtn
+            } ${baseBtn}`}
+            type="button"
+          >
+            <Timer size={16} />
+            {stopwatchLabel}
           </button>
         </div>
 
@@ -446,7 +664,19 @@ export default function Clock() {
         </div>
 
         {/* Mobile */}
-        <div className="absolute left-1/2 flex -translate-x-1/2 sm:hidden">
+        <div className="absolute left-1/2 z-20 flex -translate-x-1/2 gap-3 sm:hidden">
+          <button
+            aria-label={clockLabel}
+            onClick={showClock}
+            className={`rounded-full p-2 transition ${
+              !toolPanelOpen
+                ? "bg-white text-black"
+                : "bg-gray-800 text-white hover:bg-gray-700"
+            }`}
+            type="button"
+          >
+            <Clock3 size={20} />
+          </button>
           <button
             aria-label={calendarLabel}
             onClick={toggleCalendar}
@@ -458,6 +688,18 @@ export default function Clock() {
             type="button"
           >
             <CalendarDays size={20} />
+          </button>
+          <button
+            aria-label={stopwatchLabel}
+            onClick={toggleStopwatch}
+            className={`rounded-full p-2 transition ${
+              stopwatchOpen
+                ? "bg-white text-black"
+                : "bg-gray-800 text-white hover:bg-gray-700"
+            }`}
+            type="button"
+          >
+            <Timer size={20} />
           </button>
         </div>
 
@@ -479,6 +721,14 @@ export default function Clock() {
       {calendarOpen && (
         <div className="sm:hidden mt-24 w-full px-6">{calendarPanel}</div>
       )}
+      {stopwatchOpen && (
+        <div
+          className={`${calendarOpen ? "mt-6" : "mt-24"} w-full px-6 sm:hidden`}
+        >
+          {stopwatchPanel}
+        </div>
+      )}
+      {!stopwatchOpen && (
       <div className="sm:hidden w-full max-w-6xl px-6 grid grid-cols-2 gap-6 mt-20">
         {/* HORAS + MINUTOS */}
         <div className="flex flex-col items-start justify-center">
@@ -561,23 +811,35 @@ export default function Clock() {
           </span>
         </div>
       </div>
+      )}
 
       {/* =============================== */}
       {/* 🖥 DESKTOP VERSION */}
       {/* =============================== */}
+      {stopwatchOpen && (
+        <div className="hidden w-full max-w-5xl px-6 pt-28 sm:block">
+          {stopwatchPanel}
+        </div>
+      )}
+      {!stopwatchOpen && (
       <div
         className={`hidden w-full items-end gap-8 px-6 pt-28 transition-all sm:grid ${
-          calendarOpen
+          toolPanelOpen
             ? "max-w-[102rem] grid-cols-[minmax(540px,660px)_minmax(0,1fr)]"
             : "max-w-none grid-cols-1"
         }`}
       >
-        {calendarOpen && calendarPanel}
+        {toolPanelOpen && (
+          <div className="flex w-full flex-col gap-8">
+            {calendarOpen && calendarPanel}
+            {stopwatchOpen && stopwatchPanel}
+          </div>
+        )}
         <div className="w-full">
         <div className="flex items-baseline justify-center mt-20 leading-none text-center">
           <h1
             className={`font-[Space_Mono] leading-none ${
-              calendarOpen
+              toolPanelOpen
                 ? "text-[7rem] md:text-[10rem] lg:text-[13rem]"
                 : "text-[10rem] md:text-[16rem] lg:text-[20rem]"
             }`}
@@ -592,7 +854,7 @@ export default function Clock() {
         <div className="mt-20 w-full flex justify-center pt-14">
           <div
             className={`w-full grid gap-8 px-6 ${
-              calendarOpen
+              toolPanelOpen
                 ? "max-w-4xl grid-cols-1 xl:grid-cols-3"
                 : "max-w-6xl grid-cols-3"
             }`}
@@ -668,6 +930,7 @@ export default function Clock() {
         </div>
       </div>
       </div>
+      )}
     </div>
   );
 }
