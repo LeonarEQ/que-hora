@@ -1,10 +1,11 @@
 import Clock from "../components/Clock";
 
 export const metadata = {
-  title: "Qué hora es ahora - que-hora.com",
-  description: "Consulta la hora actual y el clima en tu ciudad con Sunvalis.",
+  title: "Que horas são agora - que-hora.com",
+  description:
+    "Veja a hora atual e o clima na sua cidade. Rápido, preciso e atualizado a cada segundo.",
   alternates: {
-    canonical: "https://que-hora.com/es",
+    canonical: "https://que-hora.com/pt",
     languages: {
       es: "https://que-hora.com/es",
       en: "https://que-hora.com/en",

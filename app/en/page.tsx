@@ -9,6 +9,9 @@ export const metadata = {
     languages: {
       es: "https://que-hora.com/es",
       en: "https://que-hora.com/en",
+      zh: "https://que-hora.com/zh",
+      nl: "https://que-hora.com/nl",
+      pt: "https://que-hora.com/pt",
     },
   },
 };

@@ -6,7 +6,18 @@ import Link from "next/link";
 export function Footer() {
   const pathname = usePathname();
   const isEnglish = pathname.startsWith("/en");
-  const homePath = isEnglish ? "/en" : "/es";
+  const isChinese = pathname.startsWith("/zh");
+  const isDutch = pathname.startsWith("/nl");
+  const isPortuguese = pathname.startsWith("/pt");
+  const homePath = isPortuguese
+    ? "/pt"
+    : isDutch
+    ? "/nl"
+    : isChinese
+      ? "/zh"
+      : isEnglish
+        ? "/en"
+        : "/es";
 
   // Estado para el color del texto
   const [textColor, setTextColor] = useState("text-white");
@@ -45,7 +56,70 @@ export function Footer() {
         </p>
 
         <div className="flex flex-wrap justify-center gap-4 font-medium">
-          {isEnglish ? (
+          {isPortuguese ? (
+            <>
+              <Link
+                href="/pt/legal-notice"
+                className="hover:text-blue-400 transition-colors"
+              >
+                Aviso Legal
+              </Link>
+              <Link
+                href="/pt/privacy-policy"
+                className="hover:text-blue-400 transition-colors"
+              >
+                Privacidade
+              </Link>
+              <Link
+                href="/pt/cookies-policy"
+                className="hover:text-blue-400 transition-colors"
+              >
+                Cookies
+              </Link>
+            </>
+          ) : isDutch ? (
+            <>
+              <Link
+                href="/nl/legal-notice"
+                className="hover:text-blue-400 transition-colors"
+              >
+                Juridische kennisgeving
+              </Link>
+              <Link
+                href="/nl/privacy-policy"
+                className="hover:text-blue-400 transition-colors"
+              >
+                Privacybeleid
+              </Link>
+              <Link
+                href="/nl/cookies-policy"
+                className="hover:text-blue-400 transition-colors"
+              >
+                Cookiebeleid
+              </Link>
+            </>
+          ) : isChinese ? (
+            <>
+              <Link
+                href="/zh/legal-notice"
+                className="hover:text-blue-400 transition-colors"
+              >
+                法律声明
+              </Link>
+              <Link
+                href="/zh/privacy-policy"
+                className="hover:text-blue-400 transition-colors"
+              >
+                隐私政策
+              </Link>
+              <Link
+                href="/zh/cookies-policy"
+                className="hover:text-blue-400 transition-colors"
+              >
+                Cookie 政策
+              </Link>
+            </>
+          ) : isEnglish ? (
             <>
               <Link
                 href="/en/legal-notice"

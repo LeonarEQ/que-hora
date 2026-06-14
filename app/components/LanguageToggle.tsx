@@ -1,16 +1,27 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Globe } from "lucide-react";
+
+const languages = [
+  { code: "es", label: "Español" },
+  { code: "en", label: "English" },
+  { code: "zh", label: "中文" },
+  { code: "nl", label: "Nederlands" },
+  { code: "pt", label: "Português" },
+] as const;
+
+type LanguageCode = (typeof languages)[number]["code"];
 
 export function LanguageToggle() {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const isEnglish = pathname.startsWith("/en");
   const [theme, setTheme] = useState<"light" | "dark" | "gray">("gray");
+  const currentLanguage =
+    languages.find((language) => pathname.startsWith(`/${language.code}`))?.code ||
+    "es";
 
-  // Detecta tema del body dinámicamente
   useEffect(() => {
     const detectTheme = () => {
       const bodyClass = document.body.className;
@@ -18,21 +29,28 @@ export function LanguageToggle() {
       else if (bodyClass.includes("theme-dark")) setTheme("dark");
       else setTheme("gray");
     };
+
     detectTheme();
     const observer = new MutationObserver(detectTheme);
-    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
     return () => observer.disconnect();
   }, []);
 
-  const toggleLanguage = (lang: "en" | "es") => {
-    const newPath = pathname.replace(/^\/(en|es)/, `/${lang}`);
+  const changeLanguage = (lang: LanguageCode) => {
+    const newPath = pathname.match(/^\/(en|es|zh|nl|pt)(\/|$)/)
+      ? pathname.replace(/^\/(en|es|zh|nl|pt)/, `/${lang}`)
+      : `/${lang}`;
+
     router.push(newPath);
     setMenuOpen(false);
   };
 
   return (
     <div className="relative">
-      {/* Botón principal del globo */}
       <button
         onClick={() => setMenuOpen(!menuOpen)}
         className={`
@@ -50,29 +68,24 @@ export function LanguageToggle() {
         />
       </button>
 
-      {/* Menú de selección de idioma */}
       {menuOpen && (
         <div
           className={`
-            absolute right-0 mt-2 shadow-lg rounded-lg py-2 text-sm
+            absolute right-0 mt-2 shadow-lg rounded-lg py-2 text-sm z-20
             ${theme === "light" ? "bg-white text-black" : "bg-gray-800 text-white"}
           `}
         >
-          {!isEnglish ? (
+          {languages.map((language) => (
             <button
-              onClick={() => toggleLanguage("en")}
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
+              key={language.code}
+              onClick={() => changeLanguage(language.code)}
+              className={`block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left whitespace-nowrap ${
+                currentLanguage === language.code ? "font-semibold" : ""
+              }`}
             >
-              English
+              {language.label}
             </button>
-          ) : (
-            <button
-              onClick={() => toggleLanguage("es")}
-              className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left"
-            >
-              Español
-            </button>
-          )}
+          ))}
         </div>
       )}
     </div>
