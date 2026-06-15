@@ -7,12 +7,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
-  Menu,
   Pause,
   Play,
   RotateCcw,
   Timer,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -21,7 +19,6 @@ export default function Clock() {
   const [now, setNow] = useState(new Date());
   const [theme, setTheme] = useState<"light" | "dark" | "gray">("gray");
   const [use12h, setUse12h] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [stopwatchOpen, setStopwatchOpen] = useState(false);
   const [stopwatchRunning, setStopwatchRunning] = useState(false);
@@ -458,6 +455,9 @@ export default function Clock() {
   const stopwatchDisplay = `${String(stopwatchMinutes).padStart(2, "0")}:${String(
     stopwatchSeconds,
   ).padStart(2, "0")}.${String(stopwatchCentiseconds).padStart(2, "0")}`;
+  const stopwatchMinuteDisplay = String(stopwatchMinutes).padStart(2, "0");
+  const stopwatchSecondDisplay = String(stopwatchSeconds).padStart(2, "0");
+  const stopwatchCentisecondDisplay = String(stopwatchCentiseconds).padStart(2, "0");
   const toolPanelOpen = calendarOpen || stopwatchOpen;
   const countdownPresets = [5, 10, 15, 30];
 
@@ -512,11 +512,28 @@ export default function Clock() {
 
   const stopwatchPanel = (
     <aside className="w-full text-center">
-      <div className="font-[Space_Mono] text-[23vw] leading-none sm:text-[7rem] md:text-[10rem] lg:text-[13rem]">
+      <div className="grid grid-cols-2 gap-4 sm:hidden">
+        <div className="flex flex-col items-start justify-center">
+          <span className="font-[Space_Mono] text-[30vw] leading-none">
+            {stopwatchMinuteDisplay}
+          </span>
+          <span className="mt-[-5vw] font-[Space_Mono] text-[30vw] leading-none">
+            {stopwatchSecondDisplay}
+          </span>
+        </div>
+
+        <div className="flex flex-col items-center justify-center rounded-2xl bg-gray-100/10 p-6 text-center backdrop-blur-sm dark:bg-white/5">
+          <span className="font-[Space_Mono] text-[20vw] leading-none opacity-70">
+            {stopwatchCentisecondDisplay}
+          </span>
+        </div>
+      </div>
+
+      <div className="hidden font-[Space_Mono] leading-none sm:block sm:text-[7rem] md:text-[10rem] lg:text-[13rem]">
         {stopwatchDisplay}
       </div>
 
-      <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:mt-12">
         <button
           className="flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-black shadow-md transition hover:opacity-90"
           onClick={startStopwatch}
@@ -558,7 +575,7 @@ export default function Clock() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col items-center justify-center transition-colors duration-700 ${themes[theme]}`}
+      className={`min-h-screen flex flex-col items-center justify-start pt-32 transition-colors duration-700 sm:justify-center sm:pt-0 ${themes[theme]}`}
     >
       {/* CABECERA */}
       <div className="absolute top-3 sm:top-6 left-0 right-0 flex justify-between items-center px-6 sm:px-10">
@@ -664,7 +681,7 @@ export default function Clock() {
         </div>
 
         {/* Mobile */}
-        <div className="absolute left-1/2 z-20 flex -translate-x-1/2 gap-3 sm:hidden">
+        <div className="fixed right-4 top-3 z-30 flex flex-col gap-3 sm:hidden">
           <button
             aria-label={clockLabel}
             onClick={showClock}
@@ -701,35 +718,25 @@ export default function Clock() {
           >
             <Timer size={20} />
           </button>
-        </div>
-
-        <div className="sm:hidden">
           <LanguageToggle />
         </div>
-
-        <button
-          className="sm:hidden p-2 rounded-md hover:bg-gray-200/20"
-          onClick={() => setMenuOpen(!menuOpen)}
-        >
-          {menuOpen ? <X size={24} /> : <Menu size={24} />}
-        </button>
       </div>
 
       {/* =========================== */}
       {/* 📱 RESPONSIVE (solo móvil) */}
       {/* =========================== */}
       {calendarOpen && (
-        <div className="sm:hidden mt-24 w-full px-6">{calendarPanel}</div>
+        <div className="sm:hidden mt-6 w-full pl-6 pr-20">{calendarPanel}</div>
       )}
       {stopwatchOpen && (
         <div
-          className={`${calendarOpen ? "mt-6" : "mt-24"} w-full px-6 sm:hidden`}
+          className="mt-6 w-full pl-6 pr-20 sm:hidden"
         >
           {stopwatchPanel}
         </div>
       )}
       {!stopwatchOpen && (
-      <div className="sm:hidden w-full max-w-6xl px-6 grid grid-cols-2 gap-6 mt-20">
+      <div className="sm:hidden w-full max-w-6xl pl-6 pr-20 grid grid-cols-2 gap-4 mt-6">
         {/* HORAS + MINUTOS */}
         <div className="flex flex-col items-start justify-center">
           <span className="text-[30vw] leading-none font-[Space_Mono]">
