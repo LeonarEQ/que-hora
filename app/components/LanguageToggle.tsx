@@ -1,14 +1,16 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Globe } from "lucide-react";
+import { localeLabels } from "../seo";
 
 const languages = [
-  { code: "es", label: "Español" },
-  { code: "en", label: "English" },
-  { code: "zh", label: "中文" },
-  { code: "nl", label: "Nederlands" },
-  { code: "pt", label: "Português" },
+  { code: "es", label: localeLabels.es },
+  { code: "en", label: localeLabels.en },
+  { code: "zh", label: localeLabels.zh },
+  { code: "nl", label: localeLabels.nl },
+  { code: "pt", label: localeLabels.pt },
 ] as const;
 
 type LanguageCode = (typeof languages)[number]["code"];
@@ -53,27 +55,24 @@ export function LanguageToggle() {
     <div className="relative">
       <button
         onClick={() => setMenuOpen(!menuOpen)}
-        className={`
-          p-2 rounded-full transition-all flex items-center justify-center
-          ${theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-gray-800 hover:bg-gray-700"}
-        `}
+        className={`p-2 rounded-full transition-all flex items-center justify-center ${
+          theme === "light" ? "bg-gray-200 hover:bg-gray-300" : "bg-gray-800 hover:bg-gray-700"
+        }`}
         aria-label="Cambiar idioma"
       >
         <Globe
-          className={`
-            w-5 h-5 transition-colors
-            ${theme === "light" ? "text-black" : "text-white"}
-          `}
+          className={`w-5 h-5 transition-colors ${
+            theme === "light" ? "text-black" : "text-white"
+          }`}
           strokeWidth={2}
         />
       </button>
 
       {menuOpen && (
         <div
-          className={`
-            absolute right-0 mt-2 shadow-lg rounded-lg py-2 text-sm z-20
-            ${theme === "light" ? "bg-white text-black" : "bg-gray-800 text-white"}
-          `}
+          className={`absolute right-0 mt-2 shadow-lg rounded-lg py-2 text-sm z-20 ${
+            theme === "light" ? "bg-white text-black" : "bg-gray-800 text-white"
+          }`}
         >
           {languages.map((language) => (
             <button

@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 
 import Analytics from "./components/Analytics";
 import { Footer } from "./components/Footer";
 import { CookieBanner } from "./components/CookieBanner";
+import { siteName, siteUrl } from "./seo";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,29 +18,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 🌍 SEO internacional + OpenGraph
 export const metadata: Metadata = {
-  title: "que-hora.com - La hora actual y el clima en tu ciudad",
-  description:
-    "Consulta la hora y el clima actual con Sunvalis, en tiempo real y con precisión.",
-  metadataBase: new URL("https://que-hora.com"),
-  alternates: {
-    canonical: "https://que-hora.com/es",
-    languages: {
-      es: "https://que-hora.com/es",
-      en: "https://que-hora.com/en",
-      zh: "https://que-hora.com/zh",
-      nl: "https://que-hora.com/nl",
-      pt: "https://que-hora.com/pt",
-    },
+  title: {
+    default: "que-hora.com - Hora actual y clima",
+    template: "%s",
   },
+  description:
+    "Consulta la hora actual, la fecha y el clima local en tiempo real.",
+  metadataBase: new URL(siteUrl),
   icons: {
     icon: [
-      { url: "/qh-navy-favicon.ico" },
+      { url: "/qh-filled-favicon.ico" },
       { url: "/qh-navy-favicon-32.png", sizes: "32x32", type: "image/png" },
       { url: "/qh-navy-favicon-192.png", sizes: "192x192", type: "image/png" },
     ],
-    shortcut: ["/qh-navy-favicon.ico"],
+    shortcut: ["/qh-filled-favicon.ico"],
     apple: [
       { url: "/qh-navy-favicon-180.png", sizes: "180x180", type: "image/png" },
     ],
@@ -47,46 +41,35 @@ export const metadata: Metadata = {
     title: "que-hora.com - Hora actual y clima en tiempo real",
     description:
       "Consulta la hora y el clima actual en cualquier ciudad del mundo.",
-    url: "https://que-hora.com/es",
-    siteName: "que-hora.com",
+    url: siteUrl,
+    siteName,
     locale: "es_ES",
     type: "website",
-    images: [
-      {
-        url: "https://que-hora.com/og-image.jpg",
-        width: 1200,
-        height: 630,
-        alt: "que-hora.com - Hora y clima actual",
-      },
-    ],
   },
   twitter: {
-    card: "summary_large_image",
+    card: "summary",
     title: "que-hora.com - Hora actual y clima",
     description:
       "Consulta la hora y el clima actual en cualquier ciudad del mundo, en tiempo real.",
-    images: ["https://que-hora.com/og-image.jpg"],
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const lang = headersList.get("x-site-locale") || "es";
+
   return (
-    <html lang="es">
+    <html lang={lang}>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
-        {/* Contenido principal */}
         <main className="flex-grow">{children}</main>
-
-        {/* 🍪 Banner cookies + footer legal */}
         <CookieBanner />
         <Footer />
-
-        {/* 📈 Google Analytics */}
         <Analytics />
       </body>
     </html>

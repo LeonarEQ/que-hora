@@ -1,39 +1,57 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
+const footerLinks = {
+  es: [
+    { href: "/es/aviso-legal", label: "Aviso Legal" },
+    { href: "/es/politica-privacidad", label: "Privacidad" },
+    { href: "/es/politica-cookies", label: "Cookies" },
+  ],
+  en: [
+    { href: "/en/legal-notice", label: "Legal Notice" },
+    { href: "/en/privacy-policy", label: "Privacy Policy" },
+    { href: "/en/cookies-policy", label: "Cookies Policy" },
+  ],
+  zh: [
+    { href: "/zh/legal-notice", label: "法律声明" },
+    { href: "/zh/privacy-policy", label: "隐私政策" },
+    { href: "/zh/cookies-policy", label: "Cookie 政策" },
+  ],
+  nl: [
+    { href: "/nl/legal-notice", label: "Juridische kennisgeving" },
+    { href: "/nl/privacy-policy", label: "Privacybeleid" },
+    { href: "/nl/cookies-policy", label: "Cookiebeleid" },
+  ],
+  pt: [
+    { href: "/pt/legal-notice", label: "Aviso Legal" },
+    { href: "/pt/privacy-policy", label: "Privacidade" },
+    { href: "/pt/cookies-policy", label: "Cookies" },
+  ],
+} as const;
+
+type FooterLocale = keyof typeof footerLinks;
+
+function getFooterLocale(pathname: string): FooterLocale {
+  const segment = pathname.split("/")[1] as FooterLocale;
+  return segment in footerLinks ? segment : "es";
+}
+
 export function Footer() {
   const pathname = usePathname();
-  const isEnglish = pathname.startsWith("/en");
-  const isChinese = pathname.startsWith("/zh");
-  const isDutch = pathname.startsWith("/nl");
-  const isPortuguese = pathname.startsWith("/pt");
-  const homePath = isPortuguese
-    ? "/pt"
-    : isDutch
-    ? "/nl"
-    : isChinese
-      ? "/zh"
-      : isEnglish
-        ? "/en"
-        : "/es";
-
-  // Estado para el color del texto
+  const locale = getFooterLocale(pathname);
   const [textColor, setTextColor] = useState("text-white");
 
-  // Detectar cambios de tema global
   useEffect(() => {
     const updateTheme = () => {
-      const body = document.body;
-      if (body.classList.contains("theme-light")) {
-        setTextColor("text-black");
-      } else {
-        setTextColor("text-white");
-      }
+      setTextColor(
+        document.body.classList.contains("theme-light") ? "text-black" : "text-white",
+      );
     };
 
-    updateTheme(); // Inicial
+    updateTheme();
     const observer = new MutationObserver(updateTheme);
     observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
 
@@ -48,7 +66,7 @@ export function Footer() {
         <p className="text-center sm:text-left font-semibold tracking-wide drop-shadow">
           © {new Date().getFullYear()}{" "}
           <Link
-            href={homePath}
+            href={`/${locale}`}
             className="hover:underline hover:text-blue-400 transition-all"
           >
             que-hora.com
@@ -56,112 +74,15 @@ export function Footer() {
         </p>
 
         <div className="flex flex-wrap justify-center gap-4 font-medium">
-          {isPortuguese ? (
-            <>
-              <Link
-                href="/pt/legal-notice"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Aviso Legal
-              </Link>
-              <Link
-                href="/pt/privacy-policy"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Privacidade
-              </Link>
-              <Link
-                href="/pt/cookies-policy"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Cookies
-              </Link>
-            </>
-          ) : isDutch ? (
-            <>
-              <Link
-                href="/nl/legal-notice"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Juridische kennisgeving
-              </Link>
-              <Link
-                href="/nl/privacy-policy"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Privacybeleid
-              </Link>
-              <Link
-                href="/nl/cookies-policy"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Cookiebeleid
-              </Link>
-            </>
-          ) : isChinese ? (
-            <>
-              <Link
-                href="/zh/legal-notice"
-                className="hover:text-blue-400 transition-colors"
-              >
-                法律声明
-              </Link>
-              <Link
-                href="/zh/privacy-policy"
-                className="hover:text-blue-400 transition-colors"
-              >
-                隐私政策
-              </Link>
-              <Link
-                href="/zh/cookies-policy"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Cookie 政策
-              </Link>
-            </>
-          ) : isEnglish ? (
-            <>
-              <Link
-                href="/en/legal-notice"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Legal Notice
-              </Link>
-              <Link
-                href="/en/privacy-policy"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Privacy Policy
-              </Link>
-              <Link
-                href="/en/cookies-policy"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Cookies Policy
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link
-                href="/es/aviso-legal"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Aviso Legal
-              </Link>
-              <Link
-                href="/es/politica-privacidad"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Privacidad
-              </Link>
-              <Link
-                href="/es/politica-cookies"
-                className="hover:text-blue-400 transition-colors"
-              >
-                Cookies
-              </Link>
-            </>
-          )}
+          {footerLinks[locale].map((link) => (
+            <Link
+              href={link.href}
+              className="hover:text-blue-400 transition-colors"
+              key={link.href}
+            >
+              {link.label}
+            </Link>
+          ))}
         </div>
       </div>
     </footer>

@@ -310,25 +310,25 @@ export default function Clock() {
           ? "Calendar"
           : "Calendario";
   const clockLabel = isChinese
-    ? "æ—¶é’Ÿ"
+    ? "时钟"
     : isPortuguese
-      ? "Relogio"
+      ? "Relógio"
       : isDutch
         ? "Klok"
         : isEnglish
           ? "Clock"
           : "Reloj";
   const stopwatchLabel = isChinese
-    ? "ç§’è¡¨"
+    ? "秒表"
     : isPortuguese
-      ? "Cronometro"
+      ? "Cronómetro"
       : isDutch
         ? "Stopwatch"
         : isEnglish
           ? "Stopwatch"
-          : "Cronometro";
+          : "Cronómetro";
   const stopwatchStartLabel = isChinese
-    ? "å¼€å§‹"
+    ? "开始"
     : isPortuguese
       ? "Iniciar"
       : isDutch
@@ -337,7 +337,7 @@ export default function Clock() {
           ? "Start"
           : "Iniciar";
   const stopwatchPauseLabel = isChinese
-    ? "æš‚åœ"
+    ? "暂停"
     : isPortuguese
       ? "Pausar"
       : isDutch
@@ -346,7 +346,7 @@ export default function Clock() {
           ? "Pause"
           : "Pausar";
   const stopwatchResetLabel = isChinese
-    ? "é‡ç½®"
+    ? "重置"
     : isPortuguese
       ? "Reiniciar"
       : isDutch
