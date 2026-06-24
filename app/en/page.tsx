@@ -1,24 +1,13 @@
 import Clock from "../components/Clock";
+import { HomeIntro } from "../components/HomeIntro";
+import { getHomeMetadata } from "../seo";
 
-export const metadata = {
-  title: "Current time now - que-hora.com",
-  description:
-    "Check the current time and weather in your city with Sunvalis. Accurate, fast and updated every second.",
-  alternates: {
-    canonical: "https://que-hora.com/en",
-    languages: {
-      es: "https://que-hora.com/es",
-      en: "https://que-hora.com/en",
-      zh: "https://que-hora.com/zh",
-      nl: "https://que-hora.com/nl",
-      pt: "https://que-hora.com/pt",
-    },
-  },
-};
+export const metadata = getHomeMetadata("en");
 
 export default function Page() {
   return (
     <main>
+      <HomeIntro locale="en" />
       <Clock />
     </main>
   );

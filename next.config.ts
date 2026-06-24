@@ -1,17 +1,11 @@
-// ✅ Versión final compatible con Next.js 16 (App Router + Turbopack)
-
 const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
 
-  // 🖼️ Permite cargar iconos/meteo desde OpenWeather
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "openweathermap.org" },
-    ],
+    remotePatterns: [{ protocol: "https", hostname: "openweathermap.org" }],
   },
 
-  // 🔒 Cabeceras de seguridad + caché útil para SEO
   async headers() {
     return [
       {
@@ -45,11 +39,6 @@ const nextConfig = {
         headers: [{ key: "Cache-Control", value: "public, max-age=3600" }],
       },
     ];
-  },
-
-  // 🔁 SEO: redirige la raíz hacia /es
-  async redirects() {
-    return [{ source: "/", destination: "/es", permanent: true }];
   },
 };
 
