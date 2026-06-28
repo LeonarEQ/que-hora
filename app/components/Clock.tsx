@@ -15,6 +15,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+const LOCATION_UPDATE_HIDDEN_UNTIL_KEY = "locationUpdateHiddenUntil";
+const LOCATION_UPDATE_HIDE_DAYS = 7;
+const LOCATION_UPDATE_HIDE_MS = LOCATION_UPDATE_HIDE_DAYS * 24 * 60 * 60 * 1000;
+
 export default function Clock() {
   const [mounted, setMounted] = useState(false);
   const [now, setNow] = useState(new Date());
@@ -67,6 +71,20 @@ export default function Clock() {
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
+    const hiddenUntil = Number(
+      localStorage.getItem(LOCATION_UPDATE_HIDDEN_UNTIL_KEY),
+    );
+
+    if (hiddenUntil > Date.now()) {
+      setLocationUpdateHidden(true);
+      return;
+    }
+
+    localStorage.removeItem(LOCATION_UPDATE_HIDDEN_UNTIL_KEY);
+    setLocationUpdateHidden(false);
   }, []);
 
   useEffect(() => {
@@ -467,6 +485,10 @@ export default function Clock() {
   };
 
   const updateLocation = () => {
+    localStorage.setItem(
+      LOCATION_UPDATE_HIDDEN_UNTIL_KEY,
+      String(Date.now() + LOCATION_UPDATE_HIDE_MS),
+    );
     setLocationUpdateHidden(true);
     loadLocation();
   };
