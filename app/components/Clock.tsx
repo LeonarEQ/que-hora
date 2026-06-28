@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { LanguageToggle } from "./LanguageToggle";
 import {
@@ -9,6 +9,7 @@ import {
   Clock3,
   Pause,
   Play,
+  RefreshCw,
   RotateCcw,
   Timer,
 } from "lucide-react";
@@ -38,6 +39,8 @@ export default function Clock() {
     lat: number;
     lon: number;
   } | null>(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationUpdateHidden, setLocationUpdateHidden] = useState(false);
 
   const [weather, setWeather] = useState<{
     temp: number;
@@ -124,27 +127,32 @@ export default function Clock() {
     document.body.classList.add(`theme-${theme}`);
   }, [theme, mounted]);
 
+  const loadLocation = useCallback(async () => {
+    setLocationLoading(true);
+    try {
+      const res = await fetch("/api/location", { cache: "no-store" });
+      const data = await res.json();
+      if (data.city) {
+        setLocation({
+          city: data.city,
+          country: data.country,
+          timezone: data.timezone,
+          lat: data.lat,
+          lon: data.lon,
+        });
+        setWeather(null);
+      }
+    } catch (err) {
+      console.error("Error cargando ubicación:", err);
+    } finally {
+      setLocationLoading(false);
+    }
+  }, []);
+
   /* UBICACIÓN REAL */
   useEffect(() => {
-    async function loadLocation() {
-      try {
-        const res = await fetch("/api/location");
-        const data = await res.json();
-        if (data.city) {
-          setLocation({
-            city: data.city,
-            country: data.country,
-            timezone: data.timezone,
-            lat: data.lat,
-            lon: data.lon,
-          });
-        }
-      } catch (err) {
-        console.error("Error cargando ubicación:", err);
-      }
-    }
     loadLocation();
-  }, []);
+  }, [loadLocation]);
 
   /* CLIMA REAL */
   useEffect(() => {
@@ -354,6 +362,15 @@ export default function Clock() {
         : isEnglish
           ? "Reset"
           : "Reiniciar";
+  const updateLocationLabel = isChinese
+    ? "更新位置"
+    : isPortuguese
+      ? "Atualizar localização"
+      : isDutch
+        ? "Locatie bijwerken"
+        : isEnglish
+          ? "Update location"
+          : "Actualizar ubicación";
   const selectedMonthLabel = calendarMonth.toLocaleDateString(locale, {
     month: "long",
     year: "numeric",
@@ -449,6 +466,11 @@ export default function Clock() {
     setStopwatchRunning((running) => !running);
   };
 
+  const updateLocation = () => {
+    setLocationUpdateHidden(true);
+    loadLocation();
+  };
+
   const stopwatchMinutes = Math.floor(stopwatchElapsed / 60000);
   const stopwatchSeconds = Math.floor((stopwatchElapsed % 60000) / 1000);
   const stopwatchCentiseconds = Math.floor((stopwatchElapsed % 1000) / 10);
@@ -460,6 +482,22 @@ export default function Clock() {
   const stopwatchCentisecondDisplay = String(stopwatchCentiseconds).padStart(2, "0");
   const toolPanelOpen = calendarOpen || stopwatchOpen;
   const countdownPresets = [5, 10, 15, 30];
+  const updateLocationButton = locationUpdateHidden ? null : (
+    <button
+      aria-label={updateLocationLabel}
+      className="mt-5 inline-flex items-center justify-center gap-1.5 text-xs font-medium opacity-45 transition hover:opacity-80 disabled:cursor-wait disabled:opacity-35"
+      disabled={locationLoading}
+      onClick={updateLocation}
+      type="button"
+    >
+      <RefreshCw
+        aria-hidden="true"
+        className={locationLoading ? "animate-spin" : ""}
+        size={16}
+      />
+      {updateLocationLabel}
+    </button>
+  );
 
   const calendarPanel = (
     <aside className="w-full rounded-2xl bg-gray-100/10 p-7 backdrop-blur-sm dark:bg-white/5 sm:p-10">
@@ -759,6 +797,7 @@ export default function Clock() {
           <span className="text-lg opacity-70 mt-1 capitalize">
             {countryDisplay}
           </span>
+          {updateLocationButton}
           <span className="text-[20vw] font-[Space_Mono] opacity-70 leading-none mt-4">
             {seconds}
           </span>
@@ -878,6 +917,7 @@ export default function Clock() {
                 {location?.city || "…"}
               </span>
               <span className="text-xl opacity-70 mt-2">{countryDisplay}</span>
+              {updateLocationButton}
             </div>
 
             {/* CARD — WEATHER */}
