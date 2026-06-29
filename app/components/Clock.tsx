@@ -624,44 +624,44 @@ export default function Clock() {
 
   const calendarPanel = (
     <aside className={`w-full rounded-2xl p-9 backdrop-blur-sm sm:p-12 ${panelSurface}`}>
-      <div className="flex items-center justify-between gap-3">
+      <div className="mx-auto flex w-full max-w-[26rem] items-center justify-between gap-4 sm:max-w-[32rem]">
         <button
           aria-label="Mes anterior"
-          className="rounded-full bg-gray-300 p-3 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-full bg-gray-300 p-4 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
           onClick={() => changeCalendarMonth(-1)}
           type="button"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={24} />
         </button>
-        <h2 className="flex-1 text-center text-2xl font-semibold capitalize sm:text-3xl">
+        <h2 className="flex-1 text-center text-3xl font-semibold capitalize sm:text-4xl">
           {selectedMonthLabel}
         </h2>
         <button
           aria-label="Mes siguiente"
-          className="rounded-full bg-gray-300 p-3 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-full bg-gray-300 p-4 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
           onClick={() => changeCalendarMonth(1)}
           type="button"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={24} />
         </button>
       </div>
 
-      <div className="mt-6 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase opacity-60 sm:gap-3 sm:text-sm">
+      <div className="mx-auto mt-8 grid w-full max-w-[26rem] grid-cols-7 gap-2 text-center text-sm font-semibold uppercase opacity-60 sm:max-w-[32rem] sm:gap-3 sm:text-base">
         {weekDayLabels.map((label) => (
           <span key={label}>{label}</span>
         ))}
       </div>
 
-      <div className="mt-4 grid grid-cols-7 gap-2 sm:gap-3">
+      <div className="mx-auto mt-5 grid w-full max-w-[26rem] grid-cols-7 gap-2 sm:max-w-[32rem] sm:gap-3">
         {calendarDays.map((calendarDay) => (
           <div
             key={calendarDay.date.toISOString()}
-            className={`flex aspect-square items-center justify-center text-lg font-semibold transition sm:text-xl ${
+            className={`flex aspect-square items-center justify-center text-xl font-semibold transition sm:text-2xl ${
               !calendarDay.inCurrentMonth ? "invisible" : ""
             }`}
           >
             <span
-              className={`flex h-9 w-9 items-center justify-center transition sm:h-10 sm:w-10 ${
+              className={`flex h-12 w-12 items-center justify-center transition sm:h-14 sm:w-14 ${
                 calendarDay.isToday
                   ? "rounded-full bg-white text-black shadow-md"
                   : calendarDay.isPast
@@ -919,7 +919,7 @@ export default function Clock() {
       {/* 📱 RESPONSIVE (solo móvil) */}
       {/* =========================== */}
       {calendarOpen && (
-        <div className="sm:hidden w-full max-w-md px-6">
+        <div className="sm:hidden w-full max-w-[30rem] px-6">
           {calendarPanel}
         </div>
       )}
@@ -1017,7 +1017,7 @@ export default function Clock() {
       {/* 🖥 DESKTOP VERSION */}
       {/* =============================== */}
       {calendarOpen && (
-        <div className="hidden w-full max-w-3xl px-6 pt-28 sm:block">
+        <div className="hidden w-full max-w-[42rem] px-6 pt-28 sm:block">
           {calendarPanel}
         </div>
       )}
