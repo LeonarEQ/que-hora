@@ -662,7 +662,7 @@ export default function Clock() {
 
   return (
     <div
-      className={`min-h-screen flex flex-col items-center justify-start pt-32 transition-colors duration-700 sm:justify-center sm:pt-0 ${themes[theme]}`}
+      className={`min-h-screen flex flex-col items-center justify-center px-0 transition-colors duration-700 ${themes[theme]}`}
     >
       {/* CABECERA */}
       <div className="absolute top-3 sm:top-6 left-0 right-0 flex justify-between items-center px-6 sm:px-10">
@@ -768,7 +768,10 @@ export default function Clock() {
         </div>
 
         {/* Mobile */}
-        <div className="fixed right-4 top-3 z-30 flex flex-col gap-3 sm:hidden">
+        <div className="fixed right-4 top-3 z-30 sm:hidden">
+          <LanguageToggle />
+        </div>
+        <div className="fixed bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 sm:hidden">
           <button
             aria-label={clockLabel}
             onClick={showClock}
@@ -805,7 +808,6 @@ export default function Clock() {
           >
             <Timer size={20} />
           </button>
-          <LanguageToggle />
         </div>
       </div>
 
@@ -813,19 +815,19 @@ export default function Clock() {
       {/* 📱 RESPONSIVE (solo móvil) */}
       {/* =========================== */}
       {calendarOpen && (
-        <div className="sm:hidden mt-6 w-full max-w-md pl-6 pr-20">
+        <div className="sm:hidden w-full max-w-md px-6">
           {calendarPanel}
         </div>
       )}
       {stopwatchOpen && (
         <div
-          className="mt-6 w-full pl-6 pr-20 sm:hidden"
+          className="w-full px-6 sm:hidden"
         >
           {stopwatchPanel}
         </div>
       )}
       {!stopwatchOpen && !calendarOpen && (
-      <div className="sm:hidden w-full max-w-6xl pl-6 pr-20 grid grid-cols-2 gap-4 mt-6">
+      <div className="sm:hidden w-full max-w-6xl px-6 grid grid-cols-2 gap-4">
         {/* HORAS + MINUTOS */}
         <div className="flex flex-col items-start justify-center">
           <span className="text-[30vw] leading-none font-[Space_Mono]">
