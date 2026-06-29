@@ -3,6 +3,8 @@ import { useCallback, useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { LanguageToggle } from "./LanguageToggle";
 import {
+  Bell,
+  BellOff,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
@@ -30,8 +32,11 @@ export default function Clock() {
   const [stopwatchElapsed, setStopwatchElapsed] = useState(0);
   const [stopwatchMode, setStopwatchMode] = useState<"up" | "down">("up");
   const [stopwatchDuration, setStopwatchDuration] = useState(0);
+  const [stopwatchAlarmEnabled, setStopwatchAlarmEnabled] = useState(false);
   const stopwatchElapsedRef = useRef(0);
   const stopwatchDurationRef = useRef(0);
+  const stopwatchAlarmEnabledRef = useRef(false);
+  const alarmContextRef = useRef<AudioContext | null>(null);
   const [calendarMonth, setCalendarMonth] = useState(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
@@ -112,6 +117,43 @@ export default function Clock() {
   }, [stopwatchDuration]);
 
   useEffect(() => {
+    stopwatchAlarmEnabledRef.current = stopwatchAlarmEnabled;
+  }, [stopwatchAlarmEnabled]);
+
+  const getAlarmContext = useCallback(() => {
+    if (typeof window === "undefined") return null;
+
+    alarmContextRef.current ??= new AudioContext();
+    return alarmContextRef.current;
+  }, []);
+
+  const playStopwatchAlarm = useCallback(() => {
+    const context = getAlarmContext();
+    if (!context) return;
+
+    if (context.state === "suspended") {
+      context.resume();
+    }
+
+    [0, 0.32, 0.64].forEach((offset) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const startAt = context.currentTime + offset;
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(880, startAt);
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.25, startAt + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startAt + 0.22);
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+      oscillator.start(startAt);
+      oscillator.stop(startAt + 0.24);
+    });
+  }, [getAlarmContext]);
+
+  useEffect(() => {
     if (!stopwatchRunning) return;
 
     const startedAt =
@@ -128,6 +170,9 @@ export default function Clock() {
 
         if (nextRemaining === 0) {
           setStopwatchRunning(false);
+          if (stopwatchAlarmEnabledRef.current) {
+            playStopwatchAlarm();
+          }
         }
         return;
       }
@@ -136,7 +181,7 @@ export default function Clock() {
     }, 50);
 
     return () => clearInterval(t);
-  }, [stopwatchMode, stopwatchRunning]);
+  }, [playStopwatchAlarm, stopwatchMode, stopwatchRunning]);
 
   /* TEMA */
   useEffect(() => {
@@ -384,6 +429,24 @@ export default function Clock() {
         : isEnglish
           ? "Reset"
           : "Reiniciar";
+  const stopwatchAlarmOnLabel = isChinese
+    ? "闹钟开启"
+    : isPortuguese
+      ? "Alarme ativo"
+      : isDutch
+        ? "Alarm aan"
+        : isEnglish
+          ? "Alarm on"
+          : "Alarma activa";
+  const stopwatchAlarmOffLabel = isChinese
+    ? "静音"
+    : isPortuguese
+      ? "Silencio"
+      : isDutch
+        ? "Stil"
+        : isEnglish
+          ? "Silent"
+          : "Silencio";
   const updateLocationLabel = isChinese
     ? "更新位置"
     : isPortuguese
@@ -492,12 +555,12 @@ export default function Clock() {
     setStopwatchElapsed(0);
   };
 
-  const startCountdown = (minutes: number) => {
+  const selectCountdown = (minutes: number) => {
     const duration = minutes * 60000;
+    setStopwatchRunning(false);
     setStopwatchMode("down");
     setStopwatchDuration(duration);
     setStopwatchElapsed(duration);
-    setStopwatchRunning(true);
   };
 
   const startStopwatch = () => {
@@ -505,6 +568,21 @@ export default function Clock() {
       setStopwatchElapsed(stopwatchDuration);
     }
     setStopwatchRunning((running) => !running);
+  };
+
+  const toggleStopwatchAlarm = () => {
+    setStopwatchAlarmEnabled((enabled) => {
+      const nextEnabled = !enabled;
+
+      if (nextEnabled) {
+        const context = getAlarmContext();
+        if (context?.state === "suspended") {
+          context.resume();
+        }
+      }
+
+      return nextEnabled;
+    });
   };
 
   const updateLocation = () => {
@@ -526,7 +604,7 @@ export default function Clock() {
   const stopwatchSecondDisplay = String(stopwatchSeconds).padStart(2, "0");
   const stopwatchCentisecondDisplay = String(stopwatchCentiseconds).padStart(2, "0");
   const toolPanelOpen = calendarOpen || stopwatchOpen;
-  const countdownPresets = [5, 10, 15, 30];
+  const countdownPresets = [5, 10, 15, 30, 45, 60];
   const updateLocationButton = locationUpdateHidden ? null : (
     <button
       aria-label={updateLocationLabel}
@@ -579,18 +657,22 @@ export default function Clock() {
           <div
             key={calendarDay.date.toISOString()}
             className={`flex aspect-square items-center justify-center text-lg font-semibold transition sm:text-xl ${
-              !calendarDay.inCurrentMonth
-                ? "invisible"
-                : calendarDay.isToday
-                ? "rounded-full bg-white text-black shadow-md"
-                : calendarDay.isPast
-                  ? "text-current opacity-45"
-                  : calendarDay.isFuture
-                    ? "rounded-full bg-gray-100/10 text-current"
-                    : "text-current opacity-30"
+              !calendarDay.inCurrentMonth ? "invisible" : ""
             }`}
           >
-            {calendarDay.inCurrentMonth ? calendarDay.day : ""}
+            <span
+              className={`flex h-9 w-9 items-center justify-center transition sm:h-10 sm:w-10 ${
+                calendarDay.isToday
+                  ? "rounded-full bg-white text-black shadow-md"
+                  : calendarDay.isPast
+                    ? "text-current opacity-45"
+                    : calendarDay.isFuture
+                      ? "rounded-full bg-gray-100/10 text-current"
+                      : "text-current opacity-30"
+              }`}
+            >
+              {calendarDay.inCurrentMonth ? calendarDay.day : ""}
+            </span>
           </div>
         ))}
       </div>
@@ -620,42 +702,64 @@ export default function Clock() {
         {stopwatchDisplay}
       </div>
 
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:mt-12">
-        <button
-          className="flex items-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-black shadow-md transition hover:opacity-90"
-          onClick={startStopwatch}
-          type="button"
-        >
-          {stopwatchRunning ? <Pause size={18} /> : <Play size={18} />}
-          {stopwatchRunning ? stopwatchPauseLabel : stopwatchStartLabel}
-        </button>
-        <button
-          className="flex items-center gap-2 rounded-full bg-gray-300 px-6 py-3 text-base font-semibold text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
-          onClick={resetStopwatch}
-          type="button"
-        >
-          <RotateCcw size={18} />
-          {stopwatchResetLabel}
-        </button>
-        {countdownPresets.map((minutes) => {
-          const isActive =
-            stopwatchMode === "down" && stopwatchDuration === minutes * 60000;
+      <div className="mt-8 flex flex-col items-center justify-center gap-6 sm:mt-12">
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <button
+            className="flex min-w-28 items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-base font-semibold text-black shadow-md transition hover:opacity-90"
+            onClick={startStopwatch}
+            type="button"
+          >
+            {stopwatchRunning ? <Pause size={18} /> : <Play size={18} />}
+            {stopwatchRunning ? stopwatchPauseLabel : stopwatchStartLabel}
+          </button>
+          <button
+            className="flex items-center gap-2 rounded-full bg-gray-300 px-6 py-3 text-base font-semibold text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+            onClick={resetStopwatch}
+            type="button"
+          >
+            <RotateCcw size={18} />
+            {stopwatchResetLabel}
+          </button>
+          <button
+            aria-pressed={stopwatchAlarmEnabled}
+            aria-label={
+              stopwatchAlarmEnabled
+                ? stopwatchAlarmOnLabel
+                : stopwatchAlarmOffLabel
+            }
+            className={`flex h-12 w-12 items-center justify-center rounded-full text-base font-semibold transition ${
+              stopwatchAlarmEnabled
+                ? "bg-emerald-400 text-gray-950 shadow-md hover:bg-emerald-300"
+                : "bg-gray-300 text-gray-800 opacity-90 hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+            }`}
+            onClick={toggleStopwatchAlarm}
+            type="button"
+          >
+            {stopwatchAlarmEnabled ? <Bell size={18} /> : <BellOff size={18} />}
+          </button>
+        </div>
 
-          return (
-            <button
-              className={`rounded-full px-5 py-3 text-base font-semibold transition ${
-                isActive
-                  ? "bg-white text-black shadow-md"
-                  : "bg-gray-300 text-gray-800 opacity-90 hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
-              }`}
-              key={minutes}
-              onClick={() => startCountdown(minutes)}
-              type="button"
-            >
-              {minutes} min
-            </button>
-          );
-        })}
+        <div className="flex w-full flex-nowrap items-center justify-start gap-3 overflow-x-auto px-1 pb-1 sm:justify-center sm:overflow-visible">
+          {countdownPresets.map((minutes) => {
+            const isActive =
+              stopwatchMode === "down" && stopwatchDuration === minutes * 60000;
+
+            return (
+              <button
+                className={`shrink-0 rounded-full px-4 py-3 text-sm font-semibold transition sm:px-5 sm:text-base ${
+                  isActive
+                    ? "bg-white text-black shadow-md"
+                    : "bg-gray-300 text-gray-800 opacity-90 hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+                }`}
+                key={minutes}
+                onClick={() => selectCountdown(minutes)}
+                type="button"
+              >
+                {minutes} min
+              </button>
+            );
+          })}
+        </div>
       </div>
     </aside>
   );
