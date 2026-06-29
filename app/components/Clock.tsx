@@ -319,6 +319,10 @@ export default function Clock() {
     dark: "bg-gradient-to-b from-gray-900 to-black text-yellow-400",
     gray: "bg-gradient-to-b from-gray-800 to-gray-900 text-gray-100",
   };
+  const panelSurface =
+    theme === "light"
+      ? ""
+      : "bg-gray-100/10 dark:bg-white/5";
 
   const baseBtn =
     "whitespace-nowrap text-sm font-semibold px-4 py-2 rounded-full transition-all duration-300";
@@ -403,18 +407,37 @@ export default function Clock() {
     calendarMonth.getMonth(),
     1,
   );
+  const daysInCalendarMonth = new Date(
+    calendarMonth.getFullYear(),
+    calendarMonth.getMonth() + 1,
+    0,
+  ).getDate();
   const calendarStartOffset = (firstDayOfMonth.getDay() + 6) % 7;
-  const calendarDays = Array.from({ length: 42 }, (_, index) => {
+  const calendarCellCount =
+    Math.ceil((calendarStartOffset + daysInCalendarMonth) / 7) * 7;
+  const todayStart = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
+  const calendarDays = Array.from({ length: calendarCellCount }, (_, index) => {
     const date = new Date(
       calendarMonth.getFullYear(),
       calendarMonth.getMonth(),
       index - calendarStartOffset + 1,
     );
+    const dateStart = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    ).getTime();
 
     return {
       date,
       day: date.getDate(),
       inCurrentMonth: date.getMonth() === calendarMonth.getMonth(),
+      isPast: dateStart < todayStart,
+      isFuture: dateStart > todayStart,
       isToday:
         date.getFullYear() === now.getFullYear() &&
         date.getMonth() === now.getMonth() &&
@@ -522,48 +545,52 @@ export default function Clock() {
   );
 
   const calendarPanel = (
-    <aside className="w-full rounded-2xl bg-gray-100/10 p-7 backdrop-blur-sm dark:bg-white/5 sm:p-10">
-      <div className="flex items-center justify-between gap-5">
+    <aside className={`w-full rounded-2xl p-9 backdrop-blur-sm sm:p-12 ${panelSurface}`}>
+      <div className="flex items-center justify-between gap-3">
         <button
           aria-label="Mes anterior"
-          className="rounded-full bg-gray-300 p-4 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-full bg-gray-300 p-3 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
           onClick={() => changeCalendarMonth(-1)}
           type="button"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft size={20} />
         </button>
-        <h2 className="flex-1 text-center text-4xl font-semibold capitalize">
+        <h2 className="flex-1 text-center text-2xl font-semibold capitalize sm:text-3xl">
           {selectedMonthLabel}
         </h2>
         <button
           aria-label="Mes siguiente"
-          className="rounded-full bg-gray-300 p-4 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+          className="rounded-full bg-gray-300 p-3 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
           onClick={() => changeCalendarMonth(1)}
           type="button"
         >
-          <ChevronRight size={24} />
+          <ChevronRight size={20} />
         </button>
       </div>
 
-      <div className="mt-8 grid grid-cols-7 gap-4 text-center text-base font-semibold uppercase opacity-60">
+      <div className="mt-6 grid grid-cols-7 gap-2 text-center text-xs font-semibold uppercase opacity-60 sm:gap-3 sm:text-sm">
         {weekDayLabels.map((label) => (
           <span key={label}>{label}</span>
         ))}
       </div>
 
-      <div className="mt-5 grid grid-cols-7 gap-4">
+      <div className="mt-4 grid grid-cols-7 gap-2 sm:gap-3">
         {calendarDays.map((calendarDay) => (
           <div
             key={calendarDay.date.toISOString()}
-            className={`flex aspect-square items-center justify-center rounded-full text-2xl font-semibold transition ${
-              calendarDay.isToday
-                ? "bg-white text-black shadow-md"
-                : calendarDay.inCurrentMonth
-                  ? "bg-gray-100/10 text-current"
-                  : "text-current opacity-30"
+            className={`flex aspect-square items-center justify-center text-lg font-semibold transition sm:text-xl ${
+              !calendarDay.inCurrentMonth
+                ? "invisible"
+                : calendarDay.isToday
+                ? "rounded-full bg-white text-black shadow-md"
+                : calendarDay.isPast
+                  ? "text-current opacity-45"
+                  : calendarDay.isFuture
+                    ? "rounded-full bg-gray-100/10 text-current"
+                    : "text-current opacity-30"
             }`}
           >
-            {calendarDay.day}
+            {calendarDay.inCurrentMonth ? calendarDay.day : ""}
           </div>
         ))}
       </div>
@@ -786,7 +813,9 @@ export default function Clock() {
       {/* 📱 RESPONSIVE (solo móvil) */}
       {/* =========================== */}
       {calendarOpen && (
-        <div className="sm:hidden mt-6 w-full pl-6 pr-20">{calendarPanel}</div>
+        <div className="sm:hidden mt-6 w-full max-w-md pl-6 pr-20">
+          {calendarPanel}
+        </div>
       )}
       {stopwatchOpen && (
         <div
@@ -795,7 +824,7 @@ export default function Clock() {
           {stopwatchPanel}
         </div>
       )}
-      {!stopwatchOpen && (
+      {!stopwatchOpen && !calendarOpen && (
       <div className="sm:hidden w-full max-w-6xl pl-6 pr-20 grid grid-cols-2 gap-4 mt-6">
         {/* HORAS + MINUTOS */}
         <div className="flex flex-col items-start justify-center">
@@ -809,8 +838,7 @@ export default function Clock() {
 
         {/* CARD — TIME IN + SECONDS */}
         <div
-          className="flex flex-col justify-center items-center bg-gray-100/10 dark:bg-white/5 
-              p-6 rounded-2xl text-center backdrop-blur-sm"
+          className={`flex flex-col justify-center items-center p-6 rounded-2xl text-center backdrop-blur-sm ${panelSurface}`}
         >
           <span className="text-xl font-semibold opacity-90">{hourLabel}</span>
           <span className="text-2xl font-semibold opacity-90 mt-1">
@@ -827,8 +855,7 @@ export default function Clock() {
 
         {/* CARD — WEATHER */}
         <div
-          className="bg-gray-100/10 dark:bg-white/5 p-6 rounded-2xl text-center 
-              backdrop-blur-sm flex flex-col items-center"
+          className={`p-6 rounded-2xl text-center backdrop-blur-sm flex flex-col items-center ${panelSurface}`}
         >
           <span className="text-xl font-semibold opacity-90">
             {weatherLabel}
@@ -864,8 +891,7 @@ export default function Clock() {
 
         {/* CARD — DATE */}
         <div
-          className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5
-              rounded-2xl p-6 text-center backdrop-blur-sm"
+          className={`flex flex-col items-center justify-center rounded-2xl p-6 text-center backdrop-blur-sm ${panelSurface}`}
         >
           <span className="text-2xl font-semibold opacity-90 capitalize">
             {weekday}
@@ -884,12 +910,17 @@ export default function Clock() {
       {/* =============================== */}
       {/* 🖥 DESKTOP VERSION */}
       {/* =============================== */}
+      {calendarOpen && (
+        <div className="hidden w-full max-w-3xl px-6 pt-28 sm:block">
+          {calendarPanel}
+        </div>
+      )}
       {stopwatchOpen && (
         <div className="hidden w-full max-w-5xl px-6 pt-28 sm:block">
           {stopwatchPanel}
         </div>
       )}
-      {!stopwatchOpen && (
+      {!stopwatchOpen && !calendarOpen && (
       <div
         className={`hidden w-full items-end gap-8 px-6 pt-28 transition-all sm:grid ${
           toolPanelOpen
@@ -929,8 +960,7 @@ export default function Clock() {
           >
             {/* CARD — TIME IN */}
             <div
-              className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 
-                    rounded-2xl p-10 text-center backdrop-blur-sm"
+              className={`flex flex-col items-center justify-center rounded-2xl p-10 text-center backdrop-blur-sm ${panelSurface}`}
             >
               <span className="text-3xl font-semibold opacity-90">
                 {hourLabel}
@@ -944,8 +974,7 @@ export default function Clock() {
 
             {/* CARD — WEATHER */}
             <div
-              className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 
-                    rounded-2xl p-10 text-center backdrop-blur-sm capitalize"
+              className={`flex flex-col items-center justify-center rounded-2xl p-10 text-center backdrop-blur-sm capitalize ${panelSurface}`}
             >
               <span className="text-3xl font-semibold opacity-90">
                 {weatherLabel}
@@ -981,8 +1010,7 @@ export default function Clock() {
 
             {/* CARD — DATE */}
             <div
-              className="flex flex-col items-center justify-center bg-gray-100/10 dark:bg-white/5 
-                    rounded-2xl p-10 text-center backdrop-blur-sm capitalize"
+              className={`flex flex-col items-center justify-center rounded-2xl p-10 text-center backdrop-blur-sm capitalize ${panelSurface}`}
             >
               <span className="text-5xl font-semibold opacity-90">
                 {weekday}

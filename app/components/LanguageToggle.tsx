@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { Globe } from "lucide-react";
 import { localeLabels } from "../seo";
@@ -17,6 +17,7 @@ type LanguageCode = (typeof languages)[number]["code"];
 
 export function LanguageToggle() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const toggleRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const router = useRouter();
   const [theme, setTheme] = useState<"light" | "dark" | "gray">("gray");
@@ -42,6 +43,30 @@ export function LanguageToggle() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const closeOnOutsideClick = (event: PointerEvent) => {
+      if (!toggleRef.current?.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsideClick);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsideClick);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [menuOpen]);
+
   const changeLanguage = (lang: LanguageCode) => {
     const newPath = pathname.match(/^\/(en|es|zh|nl|pt)(\/|$)/)
       ? pathname.replace(/^\/(en|es|zh|nl|pt)/, `/${lang}`)
@@ -52,7 +77,7 @@ export function LanguageToggle() {
   };
 
   return (
-    <div className="relative">
+    <div className="relative" ref={toggleRef}>
       <button
         onClick={() => setMenuOpen(!menuOpen)}
         className={`p-2 rounded-full transition-all flex items-center justify-center ${
@@ -78,7 +103,7 @@ export function LanguageToggle() {
             <button
               key={language.code}
               onClick={() => changeLanguage(language.code)}
-              className={`block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left whitespace-nowrap ${
+              className={`block px-4 py-2 hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white w-full text-left whitespace-nowrap ${
                 currentLanguage === language.code ? "font-semibold" : ""
               }`}
             >
