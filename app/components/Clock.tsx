@@ -71,6 +71,7 @@ export default function Clock() {
       : isEnglish
         ? "en-US"
         : "es-ES";
+  const timezone = location?.timezone || "Europe/Madrid";
 
   /* MONTADO */
   useEffect(() => {
@@ -190,6 +191,19 @@ export default function Clock() {
     document.body.classList.add(`theme-${theme}`);
   }, [theme, mounted]);
 
+  useEffect(() => {
+    if (!mounted) return;
+
+    const tabTime = now.toLocaleTimeString("es-ES", {
+      hour12: false,
+      timeZone: timezone,
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    document.title = `Que-hora.com ${tabTime}`;
+  }, [mounted, now, timezone]);
+
   const loadLocation = useCallback(async () => {
     setLocationLoading(true);
     try {
@@ -246,8 +260,6 @@ export default function Clock() {
   if (!mounted) return null;
 
   /* HORA */
-  const timezone = location?.timezone || "Europe/Madrid";
-
   const rawTime = now.toLocaleTimeString(locale, {
     hour12: use12h,
     timeZone: timezone,
@@ -623,36 +635,36 @@ export default function Clock() {
   );
 
   const calendarPanel = (
-    <aside className={`w-full rounded-2xl p-9 backdrop-blur-sm sm:p-12 ${panelSurface}`}>
+    <aside className={`w-full rounded-2xl p-5 backdrop-blur-sm sm:p-12 ${panelSurface}`}>
       <div className="mx-auto flex w-full max-w-[26rem] items-center justify-between gap-4 sm:max-w-[32rem]">
         <button
           aria-label="Mes anterior"
-          className="rounded-full bg-gray-300 p-4 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100 sm:h-14 sm:w-14"
           onClick={() => changeCalendarMonth(-1)}
           type="button"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
         <h2 className="flex-1 text-center text-3xl font-semibold capitalize sm:text-4xl">
           {selectedMonthLabel}
         </h2>
         <button
           aria-label="Mes siguiente"
-          className="rounded-full bg-gray-300 p-4 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-300 text-gray-800 opacity-90 transition hover:opacity-100 dark:bg-gray-800 dark:text-gray-100 sm:h-14 sm:w-14"
           onClick={() => changeCalendarMonth(1)}
           type="button"
         >
-          <ChevronRight size={24} />
+          <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
         </button>
       </div>
 
-      <div className="mx-auto mt-8 grid w-full max-w-[26rem] grid-cols-7 gap-2 text-center text-sm font-semibold uppercase opacity-60 sm:max-w-[32rem] sm:gap-3 sm:text-base">
+      <div className="mx-auto mt-8 grid w-full max-w-[26rem] grid-cols-7 gap-1 text-center text-sm font-semibold uppercase opacity-60 sm:max-w-[32rem] sm:gap-3 sm:text-base">
         {weekDayLabels.map((label) => (
           <span key={label}>{label}</span>
         ))}
       </div>
 
-      <div className="mx-auto mt-5 grid w-full max-w-[26rem] grid-cols-7 gap-2 sm:max-w-[32rem] sm:gap-3">
+      <div className="mx-auto mt-5 grid w-full max-w-[26rem] grid-cols-7 gap-1 sm:max-w-[32rem] sm:gap-3">
         {calendarDays.map((calendarDay) => (
           <div
             key={calendarDay.date.toISOString()}
@@ -661,7 +673,7 @@ export default function Clock() {
             }`}
           >
             <span
-              className={`flex h-12 w-12 items-center justify-center transition sm:h-14 sm:w-14 ${
+              className={`flex h-10 w-10 shrink-0 items-center justify-center transition sm:h-14 sm:w-14 ${
                 calendarDay.isToday
                   ? "rounded-full bg-white text-black shadow-md"
                   : calendarDay.isPast
@@ -739,14 +751,14 @@ export default function Clock() {
           </button>
         </div>
 
-        <div className="flex w-full flex-nowrap items-center justify-start gap-3 overflow-x-auto px-1 pb-1 sm:justify-center sm:overflow-visible">
+        <div className="grid w-full max-w-sm grid-cols-3 gap-3 sm:flex sm:max-w-none sm:flex-nowrap sm:items-center sm:justify-center">
           {countdownPresets.map((minutes) => {
             const isActive =
               stopwatchMode === "down" && stopwatchDuration === minutes * 60000;
 
             return (
               <button
-                className={`shrink-0 rounded-full px-4 py-3 text-sm font-semibold transition sm:px-5 sm:text-base ${
+                className={`rounded-full px-4 py-3 text-sm font-semibold transition sm:shrink-0 sm:px-5 sm:text-base ${
                   isActive
                     ? "bg-white text-black shadow-md"
                     : "bg-gray-300 text-gray-800 opacity-90 hover:opacity-100 dark:bg-gray-800 dark:text-gray-100"
@@ -875,51 +887,13 @@ export default function Clock() {
         <div className="fixed right-4 top-3 z-30 sm:hidden">
           <LanguageToggle />
         </div>
-        <div className="fixed bottom-5 left-1/2 z-30 flex -translate-x-1/2 items-center gap-3 sm:hidden">
-          <button
-            aria-label={clockLabel}
-            onClick={showClock}
-            className={`rounded-full p-2 transition ${
-              !toolPanelOpen
-                ? "bg-white text-black"
-                : "bg-gray-800 text-white hover:bg-gray-700"
-            }`}
-            type="button"
-          >
-            <Clock3 size={20} />
-          </button>
-          <button
-            aria-label={calendarLabel}
-            onClick={toggleCalendar}
-            className={`rounded-full p-2 transition ${
-              calendarOpen
-                ? "bg-white text-black"
-                : "bg-gray-800 text-white hover:bg-gray-700"
-            }`}
-            type="button"
-          >
-            <CalendarDays size={20} />
-          </button>
-          <button
-            aria-label={stopwatchLabel}
-            onClick={toggleStopwatch}
-            className={`rounded-full p-2 transition ${
-              stopwatchOpen
-                ? "bg-white text-black"
-                : "bg-gray-800 text-white hover:bg-gray-700"
-            }`}
-            type="button"
-          >
-            <Timer size={20} />
-          </button>
-        </div>
       </div>
 
       {/* =========================== */}
       {/* 📱 RESPONSIVE (solo móvil) */}
       {/* =========================== */}
       {calendarOpen && (
-        <div className="sm:hidden w-full max-w-[30rem] px-6">
+        <div className="sm:hidden w-full max-w-[30rem] px-3">
           {calendarPanel}
         </div>
       )}
@@ -1012,6 +986,44 @@ export default function Clock() {
         </div>
       </div>
       )}
+      <div className="mt-8 flex items-center justify-center gap-3 sm:hidden">
+        <button
+          aria-label={clockLabel}
+          onClick={showClock}
+          className={`rounded-full p-2 transition ${
+            !toolPanelOpen
+              ? "bg-white text-black"
+              : "bg-gray-800 text-white hover:bg-gray-700"
+          }`}
+          type="button"
+        >
+          <Clock3 size={20} />
+        </button>
+        <button
+          aria-label={calendarLabel}
+          onClick={toggleCalendar}
+          className={`rounded-full p-2 transition ${
+            calendarOpen
+              ? "bg-white text-black"
+              : "bg-gray-800 text-white hover:bg-gray-700"
+          }`}
+          type="button"
+        >
+          <CalendarDays size={20} />
+        </button>
+        <button
+          aria-label={stopwatchLabel}
+          onClick={toggleStopwatch}
+          className={`rounded-full p-2 transition ${
+            stopwatchOpen
+              ? "bg-white text-black"
+              : "bg-gray-800 text-white hover:bg-gray-700"
+          }`}
+          type="button"
+        >
+          <Timer size={20} />
+        </button>
+      </div>
 
       {/* =============================== */}
       {/* 🖥 DESKTOP VERSION */}
