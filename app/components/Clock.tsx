@@ -270,6 +270,17 @@ export default function Clock() {
 
   const [timePart] = rawTime.split(" ");
   const [hours, minutes, seconds] = timePart.split(":");
+  const dayPeriod =
+    use12h
+      ? new Intl.DateTimeFormat(locale, {
+          hour: "numeric",
+          hour12: true,
+          timeZone: timezone,
+        })
+          .formatToParts(now)
+          .find((part) => part.type === "dayPeriod")
+          ?.value.toUpperCase()
+      : "";
 
   /* FECHA */
   const weekday = now.toLocaleDateString(locale, {
@@ -928,9 +939,16 @@ export default function Clock() {
             {countryDisplay}
           </span>
           {updateLocationButton}
-          <span className="text-[20vw] font-[Space_Mono] opacity-70 leading-none mt-4">
-            {seconds}
-          </span>
+          <div className="mt-4 flex flex-col items-center">
+            {dayPeriod && (
+              <span className="font-[Space_Mono] text-2xl font-semibold leading-none opacity-70">
+                {dayPeriod}
+              </span>
+            )}
+            <span className="text-[20vw] font-[Space_Mono] opacity-70 leading-none">
+              {seconds}
+            </span>
+          </div>
         </div>
 
         {/* CARD — WEATHER */}
@@ -1063,9 +1081,16 @@ export default function Clock() {
           >
             {hours}:{minutes}
           </h1>
-          <span className="ml-4 text-6xl md:text-7xl lg:text-8xl opacity-70 font-[Space_Mono]">
-            {seconds}
-          </span>
+          <div className="ml-4 flex flex-col items-center self-center">
+            {dayPeriod && (
+              <span className="font-[Space_Mono] text-3xl font-semibold leading-none opacity-70 md:text-4xl lg:text-5xl">
+                {dayPeriod}
+              </span>
+            )}
+            <span className="text-6xl md:text-7xl lg:text-8xl opacity-70 font-[Space_Mono] leading-none">
+              {seconds}
+            </span>
+          </div>
         </div>
 
         <div className="mt-20 w-full flex justify-center pt-14">
